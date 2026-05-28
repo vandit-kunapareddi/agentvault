@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: agentvault-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agentvault
+      POSTGRES_PASSWORD: agentvault
+      POSTGRES_DB: agentvault
+    ports:
+      - "5432:5432"
+    volumes:
+      - agentvault_pgdata:/var/lib/postgresql/data
+
+volumes:
+  agentvault_pgdata:

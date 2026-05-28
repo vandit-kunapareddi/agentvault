@@ -18,7 +18,7 @@ import { resolvedSlackMessage, verifySlackSignature } from "./slack.js";
 const here = path.dirname(fileURLToPath(import.meta.url));
 loadEnv({ path: path.resolve(here, "../../../.env") });
 
-const PORT = Number(process.env.CHECKPOINT_PORT ?? 4000);
+const PORT = Number(process.env.PORT ?? process.env.CHECKPOINT_PORT ?? 4000);
 
 const app = express();
 

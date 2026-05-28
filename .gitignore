@@ -21,10 +21,9 @@ node_modules
 /build
 apps/*/dist
 
-# prisma / sqlite
-prisma/dev.db
-prisma/dev.db-journal
-prisma/migrations/dev/
+# prisma (committed migrations live in prisma/migrations/)
+prisma/*.db
+prisma/*.db-journal
 
 # misc
 .DS_Store
