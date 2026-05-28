@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently -n checkpoint,dashboard -c blue,magenta \"npm:dev:checkpoint\" \"npm:dev:dashboard\"",
     "dev:dashboard": "npm run dev -w @agentvault/dashboard",
     "dev:checkpoint": "npm run dev -w @agentvault/checkpoint",
     "build:dashboard": "npm run build -w @agentvault/dashboard",
@@ -15,6 +16,7 @@
     "db:generate": "prisma generate"
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "prisma": "^6.0.0",
     "typescript": "^5.6.0"
   },

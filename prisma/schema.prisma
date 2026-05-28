@@ -10,6 +10,10 @@ datasource db {
 model Agent {
   id              String        @id @default(cuid())
   name            String
+  walletAddress   String        @unique
+  trustTier       String        @default("verified")
+  trustScore      Float         @default(85)
+  trustProviderId String?
   parentAgentId   String?
   parent          Agent?        @relation("AgentTree", fields: [parentAgentId], references: [id])
   children        Agent[]       @relation("AgentTree")
@@ -24,21 +28,26 @@ model Agent {
 }
 
 model Transaction {
-  id        String   @id @default(cuid())
-  agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id])
-  vendor    String
-  amount    Float
-  status    String
-  reason    String?
-  createdAt DateTime @default(now())
+  id          String        @id @default(cuid())
+  agentId     String
+  agent       Agent         @relation(fields: [agentId], references: [id])
+  vendor      String
+  amount      Float
+  status      String
+  protocol    String        @default("x402")
+  trustTier   String?
+  reason      String?
+  createdAt   DateTime      @default(now())
+  escalations Escalation[]
 }
 
 model Escalation {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
   status        String
-  notifiedAt    DateTime  @default(now())
+  notifiedAt    DateTime?
   resolvedAt    DateTime?
-  createdAt     DateTime  @default(now())
+  resolvedBy    String?
+  createdAt     DateTime    @default(now())
 }

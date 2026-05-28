@@ -9,6 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@agentvault/trust": "*",
     "@agentvault/types": "*",
     "@prisma/client": "^6.0.0",
     "dotenv": "^16.4.0",

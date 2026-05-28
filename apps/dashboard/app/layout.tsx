@@ -26,6 +26,9 @@ export default function RootLayout({
               <Link href="/transactions" className="hover:text-[var(--accent)]">
                 Transactions
               </Link>
+              <Link href="/escalations" className="hover:text-[var(--accent)]">
+                Escalations
+              </Link>
               <Link
                 href="/agents/new"
                 className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-white hover:opacity-90"

@@ -1,7 +1,17 @@
+import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { SimpleTrustProvider } from "@agentvault/trust";
 import { prisma } from "@/lib/db";
 import { signCredential } from "@/lib/credential";
 import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";
+
+const trustProvider = new SimpleTrustProvider({
+  minScore: Number(process.env.MIN_TRUST_SCORE) || 50,
+});
+
+function generateWalletAddress(): string {
+  return `0x${randomBytes(20).toString("hex")}`;
+}
 
 export async function GET() {
   const agents = await prisma.agent.findMany({
@@ -23,6 +33,7 @@ interface CreateAgentBody {
   approvedVendors?: unknown;
   expiresAt?: unknown;
   parentAgentId?: unknown;
+  walletAddress?: unknown;
 }
 
 export async function POST(req: NextRequest) {
@@ -44,6 +55,10 @@ export async function POST(req: NextRequest) {
     typeof body.parentAgentId === "string" && body.parentAgentId.length > 0
       ? body.parentAgentId
       : null;
+  const walletAddress =
+    typeof body.walletAddress === "string" && body.walletAddress.trim().length > 0
+      ? body.walletAddress.trim()
+      : generateWalletAddress();
 
   if (!name) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -76,9 +91,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "expiresAt must be in the future" }, { status: 400 });
   }
 
+  const gate = await trustProvider.gate({
+    walletAddress,
+    known: true,
+    active: true,
+  });
+
   const created = await prisma.agent.create({
     data: {
       name,
+      walletAddress,
+      trustTier: gate.tier,
+      trustScore: gate.score,
       authorizedBy,
       dailyCap,
       perTxLimit,
@@ -91,6 +115,7 @@ export async function POST(req: NextRequest) {
   const credential = signCredential({
     agentId: created.id,
     agentName: created.name,
+    walletAddress: created.walletAddress,
     authorizedBy: created.authorizedBy,
     dailyCap: created.dailyCap,
     perTxLimit: created.perTxLimit,
