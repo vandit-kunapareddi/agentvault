@@ -58,6 +58,8 @@ export default async function AgentDetailPage({
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card label="Authorized by" value={agent.authorizedBy} />
+        <Card label="Trust" value={`${agent.trustTier} · ${Math.round(agent.trustScore)}`} />
+        <Card label="Wallet address" value={agent.walletAddress} mono />
         <Card label="Expires" value={formatDate(agent.expiresAt)} />
         <Card label="Per-transaction limit" value={formatCurrency(agent.perTxLimit)} />
         <Card label="Daily cap" value={formatCurrency(agent.dailyCap)} />
@@ -119,11 +121,21 @@ export default async function AgentDetailPage({
   );
 }
 
-function Card({ label, value }: { label: string; value: string }) {
+function Card({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="rounded-lg border border-[var(--border)] p-4">
       <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{label}</div>
-      <div className="mt-1 text-base font-medium">{value}</div>
+      <div className={`mt-1 text-base font-medium ${mono ? "break-all font-mono text-sm" : ""}`}>
+        {value}
+      </div>
     </div>
   );
 }

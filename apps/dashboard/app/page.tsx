@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { splitVendors } from "@/lib/vendors";
+import { trustTierBadge } from "@/lib/status";
 import { SpendingTree } from "./SpendingTree";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,7 @@ export default async function HomePage() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Trust</th>
                   <th className="px-4 py-3 font-medium">Authorized by</th>
                   <th className="px-4 py-3 font-medium">Daily cap</th>
                   <th className="px-4 py-3 font-medium">Per-tx limit</th>
@@ -114,6 +116,13 @@ export default async function HomePage() {
                           }`}
                         >
                           {expired ? "Expired" : "Active"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${trustTierBadge(agent.trustTier)}`}
+                        >
+                          {agent.trustTier} · {Math.round(agent.trustScore)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-[var(--muted)]">{agent.authorizedBy}</td>

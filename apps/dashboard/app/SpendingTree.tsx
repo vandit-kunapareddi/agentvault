@@ -13,12 +13,15 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { trustTierBadge } from "@/lib/status";
 
 interface TreeNodeData {
   id: string;
   name: string;
   expired: boolean;
   dailyCap: number;
+  trustTier: string;
+  trustScore: number;
   totalApprovedSpend: number;
   counts: { approved: number; blocked: number; escalated: number };
   children: TreeNodeData[];
@@ -29,7 +32,7 @@ interface TreeResponse {
 }
 
 const NODE_W = 240;
-const NODE_H = 132;
+const NODE_H = 156;
 const X_GAP = 32;
 const Y_GAP = 56;
 
@@ -109,6 +112,13 @@ function AgentNode({ data }: NodeProps<Node<TreeNodeData>>) {
           }`}
         >
           {data.expired ? "Expired" : "Active"}
+        </span>
+      </div>
+      <div className="mt-1.5">
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${trustTierBadge(data.trustTier)}`}
+        >
+          {data.trustTier} · {Math.round(data.trustScore)}
         </span>
       </div>
       <div className="mt-2 text-xs text-[var(--muted)]">

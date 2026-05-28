@@ -40,6 +40,8 @@ export async function GET(req: NextRequest) {
       vendor: row.vendor,
       amount: row.amount,
       status: row.status,
+      protocol: row.protocol,
+      trustTier: row.trustTier,
       reason: row.reason,
       createdAt: row.createdAt.toISOString(),
     })),

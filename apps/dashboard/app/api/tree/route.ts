@@ -6,6 +6,8 @@ export interface TreeNode {
   name: string;
   expired: boolean;
   dailyCap: number;
+  trustTier: string;
+  trustScore: number;
   totalApprovedSpend: number;
   counts: { approved: number; blocked: number; escalated: number };
   children: TreeNode[];
@@ -44,6 +46,8 @@ export async function GET() {
       name: agent.name,
       expired: agent.expiresAt.getTime() <= now,
       dailyCap: agent.dailyCap,
+      trustTier: agent.trustTier,
+      trustScore: agent.trustScore,
       totalApprovedSpend,
       counts,
       children: [],

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { CheckpointStatus } from "@agentvault/types";
-import { statusLabel, statusPill } from "@/lib/status";
+import { protocolBadge, protocolLabel, statusLabel, statusPill } from "@/lib/status";
 import type { TransactionRow } from "@/lib/transactions";
 
 type Filter = "all" | CheckpointStatus;
@@ -139,6 +139,7 @@ export function TransactionList({
                 <th className="px-4 py-3 font-medium">Time</th>
                 {showAgentColumn && <th className="px-4 py-3 font-medium">Agent</th>}
                 <th className="px-4 py-3 font-medium">Vendor</th>
+                <th className="px-4 py-3 font-medium">Protocol</th>
                 <th className="px-4 py-3 font-medium text-right">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Reason</th>
@@ -171,6 +172,13 @@ export function TransactionList({
                       </td>
                     )}
                     <td className="px-4 py-3 font-mono text-xs">{row.vendor}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${protocolBadge(row.protocol)}`}
+                      >
+                        {protocolLabel(row.protocol)}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-right font-mono text-sm">
                       ${row.amount.toFixed(2)}
                     </td>
