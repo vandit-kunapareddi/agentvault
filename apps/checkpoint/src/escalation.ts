@@ -83,11 +83,18 @@ export async function resolveEscalation(
 ): Promise<ResolveResult> {
   const existing = await prisma.escalation.findUnique({
     where: { id: escalationId },
+    include: { transaction: true },
   });
   if (!existing) return { ok: false, reason: "Escalation not found" };
   if (existing.status !== "pending") {
     return { ok: false, reason: `Already ${existing.status}` };
   }
+
+  const flag = existing.transaction.reason ?? "flagged for review";
+  const resolvedReason =
+    decision === "approved"
+      ? `Approved after review — ${flag}`
+      : `Blocked by reviewer — ${flag}`;
 
   await prisma.$transaction([
     prisma.escalation.update({
@@ -96,7 +103,7 @@ export async function resolveEscalation(
     }),
     prisma.transaction.update({
       where: { id: existing.transactionId },
-      data: { status: decision },
+      data: { status: decision, reason: resolvedReason },
     }),
   ]);
 
@@ -109,8 +116,10 @@ export async function resolveEscalation(
 async function persistTimeout(escalationId: string): Promise<void> {
   const existing = await prisma.escalation.findUnique({
     where: { id: escalationId },
+    include: { transaction: true },
   });
   if (!existing || existing.status !== "pending") return;
+  const flag = existing.transaction.reason ?? "flagged for review";
   await prisma.$transaction([
     prisma.escalation.update({
       where: { id: escalationId },
@@ -118,7 +127,10 @@ async function persistTimeout(escalationId: string): Promise<void> {
     }),
     prisma.transaction.update({
       where: { id: existing.transactionId },
-      data: { status: "blocked" },
+      data: {
+        status: "blocked",
+        reason: `Auto-blocked — no decision within the escalation window — ${flag}`,
+      },
     }),
   ]);
 }
