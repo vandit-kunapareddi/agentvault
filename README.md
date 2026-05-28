@@ -1,115 +1,219 @@
 # AgentVault
 
-A trust and control layer between AI agents and [x402](https://www.x402.org/) payments.
+**One SDK. Any protocol. Full control.**
 
-> **Hackathon submission — in progress.** Days 1–3 of 5 complete. See [Status](#status) for what works today.
+AgentVault is a payment router and control layer for autonomous AI agents. Drop one SDK into your agent and it can pay for services across multiple agentic payment protocols — with identity/trust verification, budget enforcement, full cross-agent spending visibility, and human-in-the-loop escalation built in.
 
-## The problem
+The agentic payment landscape has fragmented into several competing protocols (x402, MPP, ACP, and more). Each handles *how* a payment moves, but none answers the questions a developer actually cares about: **Should this agent be trusted to pay? Is this within its budget? What is my whole agent ecosystem spending? And can I step in before something unusual goes through?** AgentVault is the layer that answers those — across protocols, through one interface.
 
-AI agents are starting to spend money autonomously via x402 — paying for APIs, data, and compute per request, with no human in the loop. There's no independent enforcement layer for this. Today's options are:
+## Why
 
-- Spending limits live inside the agent's own code — if it misbehaves, the limits go with it.
-- Sub-agents that the agent hires are a black box — you only see your top-level agent's activity.
-- No mechanism to pause and ask "did you mean to do this?" when something unusual happens.
+When you give an agent the ability to spend money, three gaps appear:
 
-## The solution
+- **Limits live inside the agent.** If the agent misbehaves or is compromised, the limits go with it. Enforcement needs to be external.
+- **Sub-agents are a black box.** Agents hire other agents, which spend too. You only see your top-level agent — everything downstream is invisible.
+- **No safety net.** Every protocol is built for full autonomy. There's no mechanism to pause a payment and ask "did you mean to do this?" before it executes.
 
-AgentVault sits between an agent and the payment network. Developers register their agent and define a **spending credential** — a signed, scoped set of rules:
+AgentVault closes all three: an independent checkpoint enforces rules outside the agent, a live spending tree shows the full agent hierarchy, and unusual payments are paused for human approval.
 
-- Per-transaction limit
-- Daily budget cap
-- Approved vendor whitelist
-- Expiry time
-- Who authorized this agent
-
-Every payment passes through a checkpoint. The checkpoint verifies the credential, evaluates each rule, and either approves, blocks, or escalates the payment. Everything is logged. The dashboard shows the full spending tree, including sub-agents the top-level agent hired.
-
-## Architecture
+## How it works
 
 ```
-┌──────────┐   payment       ┌────────────┐  approved   ┌────────────┐
-│   Agent  │ ──────────────▶ │ Checkpoint │ ──────────▶ │  x402      │
-│ (any LLM)│   + credential  │  (Express) │             │  vendor    │
-└──────────┘                 └─────┬──────┘             └────────────┘
-                                   │
-                                   │ writes Transaction rows
-                                   ▼
-                             ┌─────────────┐
-                             │  SQLite     │
-                             │  (Prisma)   │
-                             └──────┬──────┘
-                                    │
-                                    ▼
-                             ┌─────────────┐
-                             │  Dashboard  │
-                             │  (Next.js)  │
-                             └─────────────┘
+   ┌──────────┐
+   │  Agent   │  vault.pay({ endpoint, maxAmount })
+   │  (SDK)   │
+   └────┬─────┘
+        │ 1. detect protocol from the endpoint
+        ▼
+   ┌─────────────────────────────────────────────┐
+   │             Checkpoint (Express)             │
+   │                                              │
+   │  2. verify signed credential (JWT)           │
+   │  3. trust gate  (pluggable TrustProvider)    │
+   │  4. per-transaction limit                    │
+   │  5. vendor whitelist        → escalate       │
+   │  6. daily budget cap                         │
+   │  7. near-cap warning        → escalate       │
+   │  8. route → protocol handler → receipt       │
+   │                                              │
+   │   ┌────────┐  ┌────────┐  ┌────────┐         │
+   │   │  x402  │  │  MPP   │  │  ACP   │  (+more) │
+   │   └────────┘  └────────┘  └────────┘         │
+   └───────┬───────────────────────────┬──────────┘
+           │ writes Transaction rows    │ on escalate
+           ▼                            ▼
+     ┌──────────┐               ┌───────────────┐
+     │  SQLite  │               │ Slack + queue │
+     │ (Prisma) │               │  (approve /   │
+     └────┬─────┘               │    block)     │
+          │                     └───────────────┘
+          ▼
+    ┌─────────────┐
+    │  Dashboard  │  spending tree · live log · escalation queue
+    │  (Next.js)  │
+    └─────────────┘
 ```
 
-The checkpoint runs every payment through:
-1. JWT signature → invalid → **block**
-2. Expiry → expired → **block**
-3. Amount vs per-tx limit → over → **block**
-4. Vendor on whitelist → not listed → **escalate**
-5. Today's spend + amount vs daily cap → over → **block**
-6. Within 10% of daily cap → **escalate**
-7. **approve**
+Every payment attempt runs through the checkpoint pipeline in order; each step can short-circuit:
 
-## Repo layout
+1. **Credential** — verify the JWT signature → tampered → **block**
+2. **Expiry** — credential expired → **block**
+3. **Trust gate** — agent's trust score below the configured minimum → **block**
+4. **Per-transaction limit** — amount over the cap → **block**
+5. **Vendor whitelist** — vendor not approved → **escalate**
+6. **Daily budget** — today's spend + amount over the daily cap → **block**
+7. **Near-cap** — within 10% of the daily cap → **escalate**
+8. **Route** — approved payments are dispatched to the matching protocol handler, which returns a settlement receipt
 
+An escalated payment is **held** for a configurable window while a human decides (via Slack or the dashboard). If no decision arrives in time it **auto-blocks** — it never fails open.
+
+## Spending credential
+
+Each agent gets a signed JWT that travels with it. Rules live in the credential, not in the agent's own code, so they're enforced even if the agent is compromised:
+
+```json
+{
+  "agentId": "clx123abc",
+  "agentName": "Research Agent",
+  "walletAddress": "0x52ce…",
+  "authorizedBy": "developer@example.com",
+  "dailyCap": 10.0,
+  "perTxLimit": 0.5,
+  "approvedVendors": ["exa.ai", "hyperbolic.xyz"],
+  "supportedProtocols": ["x402", "mpp", "acp"],
+  "issuedAt": 1748390400,
+  "expiresAt": 1748476800
+}
 ```
-agentvault/
-├── apps/
-│   ├── dashboard/      # Next.js 16 — agent registration, live transaction log, spending tree
-│   └── checkpoint/     # Express server — the verification pipeline + mock x402 endpoint
-├── packages/
-│   └── types/          # Shared TypeScript types (credential payload, request/response shapes)
-└── prisma/
-    └── schema.prisma   # Agent / Transaction / Escalation models, SQLite
+
+## SDK usage
+
+```ts
+import { AgentVault } from "@agentvault/sdk";
+
+const vault = new AgentVault({
+  credential: process.env.AGENT_CREDENTIAL, // the signed JWT
+  checkpointUrl: "http://localhost:4000",
+});
+
+// The agent never has to know which protocol the service speaks.
+const result = await vault.pay({
+  endpoint: "https://api.someservice.com/data",
+  maxAmount: 0.05,
+});
+
+if (result.status === "approved") {
+  // result.protocol, result.receipt, result.trustTier
+}
 ```
 
-## Running locally
+`pay()` detects the protocol the endpoint expects, then routes the request through the checkpoint, which verifies trust, enforces budget rules, escalates if needed, and dispatches to the right protocol handler.
 
-Requires Node 20+, npm 9+.
+## Pluggable trust
+
+Trust verification is a vendor-neutral interface:
+
+```ts
+interface TrustProvider {
+  gate(ctx: AgentTrustContext): Promise<GateResult>; // { tier, score, allow }
+}
+```
+
+AgentVault ships with `SimpleTrustProvider`, which scores agents from their registration standing. Any external identity/reputation service can implement the same interface and drop in without touching the checkpoint pipeline. The minimum score required to transact is configurable via `MIN_TRUST_SCORE`.
+
+## Protocol support
+
+| Protocol | Status |
+|----------|--------|
+| **x402** | Full handler |
+| **MPP**  | Routing + response shape implemented; execution stubbed |
+| **ACP**  | Routing + response shape implemented; execution stubbed |
+
+Payment execution currently runs against local mock handlers. The routing layer and receipt shapes mirror the real protocols, so live adapters slot in behind the existing interface without pipeline changes.
+
+## Quickstart
+
+Requires Node 20+ and npm 9+.
 
 ```bash
 git clone https://github.com/vanditkunapareddi-jpg/agentvault
 cd agentvault
-cp .env.example .env          # then edit JWT_SECRET to a real random string
+cp .env.example .env          # set JWT_SECRET to a long random string
 npm install
 npm run db:push               # creates prisma/dev.db and applies the schema
-npm run dev:dashboard         # http://localhost:3000
-npm run dev:checkpoint        # http://localhost:4000
+npm run dev                    # starts checkpoint (:4000) + dashboard (:3000)
 ```
 
-Register an agent at `/agents/new`, copy the issued JWT from the agent detail page, and use it against the checkpoint:
+Open the dashboard at `http://localhost:3000`, register an agent, and copy its credential from the agent detail page. Then have an agent pay:
 
 ```bash
 curl -X POST http://localhost:4000/checkpoint \
   -H "content-type: application/json" \
-  -d '{"credential":"<paste>","vendor":"exa.ai","amount":0.10}'
+  -d '{"credential":"<paste JWT>","vendor":"exa.ai","amount":0.10,"protocol":"x402"}'
 ```
 
-## Status
+The checkpoint exposes mock service endpoints (`/mock/x402`, `/mock/mpp`, `/mock/acp`) that return `402` with a protocol header, so the SDK's protocol detection has something to probe locally.
 
-**Done**
-- ✅ Monorepo (npm workspaces) + Prisma + SQLite
-- ✅ Agent registration with signed JWT credential issuance
-- ✅ Checkpoint pipeline with all 7 verification steps, transaction logging
-- ✅ Mock x402 vendor endpoint
-- ✅ Dashboard: live-updating transaction log with status filters, React Flow spending tree with parent→child agent hierarchy, per-agent transaction history, consistent status indicators
+## Configuration
 
-**In progress**
-- ⏳ Day 4 — Slack webhook escalations + 60s hold-and-wait for human approval
-- ⏳ Day 5 — Deploy to Vercel + Railway, demo video, submission polish
+All configuration is via `.env` (see `.env.example`):
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | SQLite connection string (`file:./dev.db`) |
+| `JWT_SECRET` | Signs and verifies spending credentials |
+| `MIN_TRUST_SCORE` | Minimum trust score (0–100) an agent must clear to transact |
+| `ESCALATION_TIMEOUT_MS` | How long a held payment waits before auto-blocking |
+| `SLACK_WEBHOOK_URL` | Optional — sends escalation notifications |
+| `SLACK_SIGNING_SECRET` | Optional — verifies Slack interactive callbacks (HMAC) |
+| `CHECKPOINT_INTERNAL_URL` | Where the dashboard forwards escalation resolutions |
+| `DASHBOARD_URL` | Used for the "open dashboard" link in Slack messages |
+
+## Project layout
+
+```
+agentvault/
+├── apps/
+│   ├── dashboard/          # Next.js — registration, spending tree, live log, escalation queue
+│   │   └── app/
+│   │       ├── page.tsx            # spending tree + agents
+│   │       ├── transactions/       # live transaction log
+│   │       ├── escalations/        # pending-approval queue
+│   │       └── api/                # agents, transactions, escalations
+│   └── checkpoint/         # Express — the control plane
+│       └── src/
+│           ├── checkpoint.ts       # the decision pipeline
+│           ├── credential.ts       # JWT verification
+│           ├── budget.ts           # daily-spend accounting
+│           ├── whitelist.ts        # vendor checks
+│           ├── trust.ts            # trust gate wiring
+│           ├── escalation.ts       # hold-and-wait + resolution
+│           ├── slack.ts            # webhook + signature verification
+│           ├── router.ts           # protocol dispatch
+│           ├── handlers/           # x402 / mpp / acp
+│           └── mock-services.ts    # local 402 endpoints for protocol detection
+├── packages/
+│   ├── sdk/                # @agentvault/sdk — developer-facing client
+│   ├── trust/              # @agentvault/trust — TrustProvider + SimpleTrustProvider
+│   └── types/             # shared TypeScript types
+└── prisma/
+    └── schema.prisma       # Agent / Transaction / Escalation, SQLite
+```
 
 ## Tech stack
 
-- **Frontend** — Next.js 16, React 19, Tailwind v4, [@xyflow/react](https://reactflow.dev/) for the tree
-- **Checkpoint** — Express on Node 20, `jsonwebtoken` for credential verification
-- **Data** — Prisma 6 + SQLite (single `prisma/dev.db`)
-- **Shared** — TypeScript types in `packages/types/` consumed by both apps via workspace resolution
+- **Dashboard** — Next.js 16, React 19, Tailwind v4, [@xyflow/react](https://reactflow.dev/) for the spending tree
+- **Checkpoint** — Express on Node 20, `jsonwebtoken` for credentials, Node `crypto` for Slack HMAC
+- **Data** — Prisma 6 + SQLite
+- **Monorepo** — npm workspaces; shared `sdk`, `trust`, and `types` packages consumed by both apps
 
-## Solo hackathon notes
+## Roadmap
 
-This is a 5-day solo build. The checkpoint orchestration ([apps/checkpoint/src/checkpoint.ts](apps/checkpoint/src/checkpoint.ts)) is the heart — every payment decision flows through one function. The dashboard polls (`@2.5s`) rather than using SSE/WebSockets to keep the deploy surface as small as possible. The mock x402 endpoint mirrors the real protocol's request/response shape so swapping in the real network post-hackathon is a single change.
+- Live protocol adapters (real x402 settlement, full MPP sessions, ACP checkout)
+- Additional `TrustProvider` implementations
+- Anomaly-based escalation triggers (unfamiliar vendor, request-rate spikes)
+- Postgres for multi-instance deployments
+
+## License
+
+MIT
