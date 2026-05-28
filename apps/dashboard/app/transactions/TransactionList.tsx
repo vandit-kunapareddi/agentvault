@@ -11,6 +11,7 @@ type Filter = "all" | CheckpointStatus;
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "approved", label: "Approved" },
+  { value: "recognized", label: "Recognized" },
   { value: "escalated", label: "Escalated" },
   { value: "blocked", label: "Blocked" },
 ];

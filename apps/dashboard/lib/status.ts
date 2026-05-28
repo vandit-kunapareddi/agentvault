@@ -6,22 +6,30 @@ export const statusPill: Record<CheckpointStatus, string> = {
   blocked: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300",
   escalated:
     "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+  recognized: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
 };
 
 export const statusDot: Record<CheckpointStatus, string> = {
   approved: "bg-emerald-500",
   blocked: "bg-red-500",
   escalated: "bg-amber-500",
+  recognized: "bg-sky-500",
 };
 
 export const statusLabel: Record<CheckpointStatus, string> = {
   approved: "Approved",
   blocked: "Blocked",
   escalated: "Escalated",
+  recognized: "Recognized",
 };
 
 export function isCheckpointStatus(value: unknown): value is CheckpointStatus {
-  return value === "approved" || value === "blocked" || value === "escalated";
+  return (
+    value === "approved" ||
+    value === "blocked" ||
+    value === "escalated" ||
+    value === "recognized"
+  );
 }
 
 const protocolBadgeStyles: Record<Protocol, string> = {

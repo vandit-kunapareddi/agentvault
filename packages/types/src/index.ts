@@ -21,7 +21,7 @@ export interface CheckpointRequest {
   endpoint?: string;
 }
 
-export type CheckpointStatus = "approved" | "blocked" | "escalated";
+export type CheckpointStatus = "approved" | "blocked" | "escalated" | "recognized";
 
 export interface PaymentReceipt {
   protocol: Protocol;

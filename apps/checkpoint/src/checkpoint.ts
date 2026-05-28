@@ -12,6 +12,11 @@ import { isApprovedVendor } from "./whitelist.js";
 import { holdAndAwait } from "./escalation.js";
 import { gateAgent } from "./trust.js";
 import { routePayment, UnsupportedProtocolError } from "./router.js";
+import {
+  countRecentEscalations,
+  getEscalationRateLimit,
+  hasUsedVendorBefore,
+} from "./heuristics.js";
 
 const NEAR_CAP_THRESHOLD = 0.9;
 
@@ -52,22 +57,49 @@ function respond(status: CheckpointStatus, opts: RespondOpts = {}): CheckpointRe
   return res;
 }
 
-async function finalizeApproved(
-  protocol: Protocol,
-  vendor: string,
-  amount: number,
-  endpoint: string | undefined,
-  trustTier: string,
-): Promise<CheckpointResponse> {
+interface FinalizeArgs {
+  agentId: string;
+  protocol: Protocol;
+  vendor: string;
+  amount: number;
+  endpoint: string | undefined;
+  trustTier: string;
+  // When resolving an escalation the transaction row already exists; pass its
+  // id so we correct (rather than create) its status. Omit for direct approvals.
+  transactionId?: string;
+}
+
+async function finalizeApproved(args: FinalizeArgs): Promise<CheckpointResponse> {
+  const { agentId, protocol, vendor, amount, endpoint, trustTier, transactionId } = args;
+  let receipt;
   try {
-    const receipt = await routePayment(protocol, { vendor, amount, endpoint });
-    return respond("approved", { protocol, trustTier, receipt });
+    receipt = await routePayment(protocol, { vendor, amount, endpoint });
   } catch (err) {
     if (err instanceof UnsupportedProtocolError) {
       return respond("blocked", { protocol, trustTier, reason: err.message });
     }
     throw err;
   }
+
+  const status: CheckpointStatus = receipt.settled ? "approved" : "recognized";
+  const reason = receipt.settled
+    ? undefined
+    : `Protocol "${protocol}" recognized; execution is not yet implemented (not settled)`;
+
+  if (transactionId) {
+    // Escalation path: the row exists and was set to "approved" on resolution.
+    // Only correct it when settlement didn't actually happen (e.g. ACP).
+    if (status !== "approved") {
+      await prisma.transaction.update({
+        where: { id: transactionId },
+        data: { status },
+      });
+    }
+  } else {
+    await logTransaction(agentId, vendor, amount, status, protocol, trustTier, reason);
+  }
+
+  return respond(status, { protocol, trustTier, receipt, reason });
 }
 
 async function escalateAndWait(
@@ -100,7 +132,15 @@ async function escalateAndWait(
     transactionId,
   });
   if (decision === "approved") {
-    return finalizeApproved(protocol, vendor, amount, endpoint, trustTier);
+    return finalizeApproved({
+      agentId: payload.agentId,
+      protocol,
+      vendor,
+      amount,
+      endpoint,
+      trustTier,
+      transactionId,
+    });
   }
   return respond("blocked", {
     protocol,
@@ -171,6 +211,24 @@ export async function evaluateCheckpoint(
     return escalateAndWait(payload, vendor, amount, protocol, trustTier, req.endpoint, reason);
   }
 
-  await logTransaction(payload.agentId, vendor, amount, "approved", protocol, trustTier);
-  return finalizeApproved(protocol, vendor, amount, req.endpoint, trustTier);
+  if (!(await hasUsedVendorBefore(payload.agentId, vendor))) {
+    const reason = `First payment to "${vendor}" — vendor is approved but this agent has never paid it before`;
+    return escalateAndWait(payload, vendor, amount, protocol, trustTier, req.endpoint, reason);
+  }
+
+  const recentEscalations = await countRecentEscalations(payload.agentId);
+  const rateLimit = getEscalationRateLimit();
+  if (recentEscalations >= rateLimit) {
+    const reason = `Unusual activity: ${recentEscalations} escalations from this agent in the past hour`;
+    return escalateAndWait(payload, vendor, amount, protocol, trustTier, req.endpoint, reason);
+  }
+
+  return finalizeApproved({
+    agentId: payload.agentId,
+    protocol,
+    vendor,
+    amount,
+    endpoint: req.endpoint,
+    trustTier,
+  });
 }

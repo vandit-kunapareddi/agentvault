@@ -4,6 +4,7 @@ export function makeReceipt(
   protocol: Protocol,
   vendor: string,
   amount: number,
+  settled = true,
 ): PaymentReceipt {
   const prefix = protocol === "unknown" ? "pay" : protocol;
   return {
@@ -12,7 +13,7 @@ export function makeReceipt(
     vendor,
     amount,
     currency: "USDC",
-    settled: true,
+    settled,
     timestamp: new Date().toISOString(),
   };
 }

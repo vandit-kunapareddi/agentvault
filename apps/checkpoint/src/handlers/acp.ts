@@ -1,8 +1,10 @@
 import type { PaymentReceipt } from "@agentvault/types";
 import { makeReceipt, type HandlerArgs } from "./receipt.js";
 
-// Stub: routing is real, payment execution is mocked. Returns the same
-// receipt shape so swapping in a real ACP checkout flow is contained.
+// ACP is recognized and routed, but checkout execution (cart, Shared
+// Payment Token, fulfillment) is not yet implemented, so the receipt is
+// returned unsettled. The control-layer checks still run; only settlement
+// is deferred.
 export async function acpHandler(args: HandlerArgs): Promise<PaymentReceipt> {
-  return makeReceipt("acp", args.vendor, args.amount);
+  return makeReceipt("acp", args.vendor, args.amount, false);
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { splitVendors } from "@/lib/vendors";
 import { trustTierBadge } from "@/lib/status";
 import { SpendingTree } from "./SpendingTree";
+import { SpendCharts } from "./SpendCharts";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,13 @@ export default async function HomePage() {
           </div>
         </header>
         <SpendingTree />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
+          Spend analytics
+        </h2>
+        <SpendCharts />
       </section>
 
       <section className="flex flex-col gap-4">
