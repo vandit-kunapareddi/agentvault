@@ -1,0 +1,220 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type FormEvent } from "react";
+
+function defaultExpiresAt(): string {
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+interface AgentOption {
+  id: string;
+  name: string;
+}
+
+export default function NewAgentPage() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [name, setName] = useState("");
+  const [authorizedBy, setAuthorizedBy] = useState("");
+  const [dailyCap, setDailyCap] = useState("10.00");
+  const [perTxLimit, setPerTxLimit] = useState("0.50");
+  const [vendorsRaw, setVendorsRaw] = useState("exa.ai\nhyperbolic.xyz\ncoingecko.com");
+  const [expiresAt, setExpiresAt] = useState(defaultExpiresAt);
+  const [parentAgentId, setParentAgentId] = useState("");
+  const [parents, setParents] = useState<AgentOption[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/agents", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: AgentOption[]) => {
+        if (!cancelled) setParents(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/agents", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name,
+          authorizedBy,
+          dailyCap: Number(dailyCap),
+          perTxLimit: Number(perTxLimit),
+          approvedVendors: vendorsRaw,
+          expiresAt: new Date(expiresAt).toISOString(),
+          parentAgentId: parentAgentId || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `Request failed (${res.status})`);
+      }
+      const created = (await res.json()) as { id: string };
+      router.push(`/agents/${created.id}`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to register agent");
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Register an agent</h1>
+        <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
+          ← Back
+        </Link>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <Field label="Agent name" hint="Display name shown in the dashboard.">
+          <input
+            required
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Research Agent"
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Authorized by" hint="Email of the developer or human operator.">
+          <input
+            required
+            type="email"
+            value={authorizedBy}
+            onChange={(e) => setAuthorizedBy(e.target.value)}
+            placeholder="you@company.com"
+            className={inputClass}
+          />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Daily cap (USD)" hint="Total spend allowed per UTC day.">
+            <input
+              required
+              type="number"
+              step="0.01"
+              min="0"
+              value={dailyCap}
+              onChange={(e) => setDailyCap(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Per-transaction limit (USD)" hint="Maximum amount per single payment.">
+            <input
+              required
+              type="number"
+              step="0.01"
+              min="0"
+              value={perTxLimit}
+              onChange={(e) => setPerTxLimit(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+
+        <Field
+          label="Approved vendors"
+          hint="One per line. Payments to anything else trigger an escalation."
+        >
+          <textarea
+            required
+            value={vendorsRaw}
+            onChange={(e) => setVendorsRaw(e.target.value)}
+            rows={5}
+            className={`${inputClass} font-mono text-xs`}
+          />
+        </Field>
+
+        <Field label="Expires at" hint="After this time the credential will no longer be valid.">
+          <input
+            required
+            type="datetime-local"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field
+          label="Parent agent"
+          hint="If this agent was hired by another agent, pick the parent. Leave blank for top-level."
+        >
+          <select
+            value={parentAgentId}
+            onChange={(e) => setParentAgentId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">— None (top-level) —</option>
+            {parents.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.id.slice(0, 8)}…
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        {error && (
+          <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Link
+            href="/"
+            className="rounded-md border border-[var(--border)] px-4 py-2 text-sm hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+          >
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
+          >
+            {submitting ? "Registering…" : "Register agent"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]";
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium">{label}</span>
+      {children}
+      {hint && <span className="text-xs text-[var(--muted)]">{hint}</span>}
+    </label>
+  );
+}

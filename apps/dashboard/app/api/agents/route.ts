@@ -1,0 +1,110 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { prisma } from "@/lib/db";
+import { signCredential } from "@/lib/credential";
+import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";
+
+export async function GET() {
+  const agents = await prisma.agent.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json(
+    agents.map((agent) => ({
+      ...agent,
+      approvedVendors: splitVendors(agent.approvedVendors),
+    })),
+  );
+}
+
+interface CreateAgentBody {
+  name?: unknown;
+  authorizedBy?: unknown;
+  dailyCap?: unknown;
+  perTxLimit?: unknown;
+  approvedVendors?: unknown;
+  expiresAt?: unknown;
+  parentAgentId?: unknown;
+}
+
+export async function POST(req: NextRequest) {
+  const body = (await req.json().catch(() => null)) as CreateAgentBody | null;
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const authorizedBy =
+    typeof body.authorizedBy === "string" ? body.authorizedBy.trim() : "";
+  const dailyCap = Number(body.dailyCap);
+  const perTxLimit = Number(body.perTxLimit);
+  const vendorsRaw = typeof body.approvedVendors === "string" ? body.approvedVendors : "";
+  const vendors = parseVendorInput(vendorsRaw);
+  const expiresAt =
+    typeof body.expiresAt === "string" ? new Date(body.expiresAt) : new Date(NaN);
+  const parentAgentId =
+    typeof body.parentAgentId === "string" && body.parentAgentId.length > 0
+      ? body.parentAgentId
+      : null;
+
+  if (!name) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+  if (!authorizedBy) {
+    return NextResponse.json({ error: "Authorized-by email is required" }, { status: 400 });
+  }
+  if (!Number.isFinite(dailyCap) || dailyCap <= 0) {
+    return NextResponse.json({ error: "Daily cap must be > 0" }, { status: 400 });
+  }
+  if (!Number.isFinite(perTxLimit) || perTxLimit <= 0) {
+    return NextResponse.json({ error: "Per-transaction limit must be > 0" }, { status: 400 });
+  }
+  if (perTxLimit > dailyCap) {
+    return NextResponse.json(
+      { error: "Per-transaction limit cannot exceed daily cap" },
+      { status: 400 },
+    );
+  }
+  if (vendors.length === 0) {
+    return NextResponse.json(
+      { error: "At least one approved vendor is required" },
+      { status: 400 },
+    );
+  }
+  if (Number.isNaN(expiresAt.getTime())) {
+    return NextResponse.json({ error: "Invalid expiresAt timestamp" }, { status: 400 });
+  }
+  if (expiresAt.getTime() <= Date.now()) {
+    return NextResponse.json({ error: "expiresAt must be in the future" }, { status: 400 });
+  }
+
+  const created = await prisma.agent.create({
+    data: {
+      name,
+      authorizedBy,
+      dailyCap,
+      perTxLimit,
+      approvedVendors: serializeVendors(vendors),
+      expiresAt,
+      parentAgentId: parentAgentId ?? undefined,
+    },
+  });
+
+  const credential = signCredential({
+    agentId: created.id,
+    agentName: created.name,
+    authorizedBy: created.authorizedBy,
+    dailyCap: created.dailyCap,
+    perTxLimit: created.perTxLimit,
+    approvedVendors: vendors,
+    expiresAt: created.expiresAt,
+  });
+
+  const agent = await prisma.agent.update({
+    where: { id: created.id },
+    data: { credential },
+  });
+
+  return NextResponse.json(
+    { ...agent, approvedVendors: splitVendors(agent.approvedVendors) },
+    { status: 201 },
+  );
+}

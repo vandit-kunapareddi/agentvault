@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id              String        @id @default(cuid())
+  name            String
+  parentAgentId   String?
+  parent          Agent?        @relation("AgentTree", fields: [parentAgentId], references: [id])
+  children        Agent[]       @relation("AgentTree")
+  credential      String?
+  authorizedBy    String
+  dailyCap        Float
+  perTxLimit      Float
+  approvedVendors String
+  expiresAt       DateTime
+  createdAt       DateTime      @default(now())
+  transactions    Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  vendor    String
+  amount    Float
+  status    String
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model Escalation {
+  id            String    @id @default(cuid())
+  transactionId String
+  status        String
+  notifiedAt    DateTime  @default(now())
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+}

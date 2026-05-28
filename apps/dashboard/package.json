@@ -1,0 +1,33 @@
+{
+  "name": "@agentvault/dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@agentvault/types": "*",
+    "@prisma/client": "^6.0.0",
+    "@xyflow/react": "^12.0.0",
+    "dotenv": "^16.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
