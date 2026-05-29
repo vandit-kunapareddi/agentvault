@@ -113,8 +113,8 @@ export function AgentTable() {
   const now = Date.now();
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[var(--border)]">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+      <table className="w-full min-w-[820px] text-sm">
         <thead className="bg-black/[.02] text-left text-xs uppercase tracking-wide text-[var(--muted)] dark:bg-white/[.02]">
           <tr>
             <th className="px-4 py-3 font-medium">Name</th>

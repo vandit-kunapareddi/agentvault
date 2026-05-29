@@ -92,8 +92,8 @@ export function TransactionList({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-1.5">
           {FILTERS.map((f) => (
             <button
               key={f.value}
@@ -135,8 +135,8 @@ export function TransactionList({
             : `No ${FILTERS.find((f) => f.value === filter)?.label.toLowerCase() ?? filter} transactions yet.`}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[var(--border)]">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+          <table className="w-full min-w-[760px] text-sm">
             <thead className="bg-black/[.02] text-left text-xs uppercase tracking-wide text-[var(--muted)] dark:bg-white/[.02]">
               <tr>
                 <th className="px-4 py-3 font-medium">Time</th>

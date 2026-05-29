@@ -37,16 +37,16 @@ export default async function AgentDetailPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
           <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
             ← All agents
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">{agent.name}</h1>
-          <p className="mt-1 text-xs text-[var(--muted)]">{agent.id}</p>
+          <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{agent.name}</h1>
+          <p className="mt-1 break-all text-xs text-[var(--muted)]">{agent.id}</p>
         </div>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
+          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
             expired
               ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
               : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"

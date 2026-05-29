@@ -154,9 +154,9 @@ export function EscalationsList() {
                   key={row.id}
                   className="flex flex-col gap-3 rounded-lg border border-amber-300/60 bg-amber-50/40 p-4 dark:border-amber-900/60 dark:bg-amber-950/20"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <Link
                           href={`/agents/${row.agentId}`}
                           className="text-sm font-semibold hover:text-[var(--accent)]"
@@ -164,7 +164,7 @@ export function EscalationsList() {
                           {row.agentName}
                         </Link>
                         <span className="text-xs text-[var(--muted)]">→</span>
-                        <span className="font-mono text-xs">{row.vendor}</span>
+                        <span className="font-mono text-xs break-all">{row.vendor}</span>
                         <span className="text-sm font-mono">
                           ${row.amount.toFixed(2)}
                         </span>
@@ -176,11 +176,11 @@ export function EscalationsList() {
                       </div>
                       <p className="text-xs text-[var(--muted)]">{row.reason}</p>
                     </div>
-                    <div className="text-right text-xs text-[var(--muted)]">
+                    <div className="text-xs text-[var(--muted)] sm:text-right">
                       <div className="font-mono">
                         Auto-blocks in {Math.ceil(remaining / 1000)}s
                       </div>
-                      <div className="mt-1 h-1 w-32 overflow-hidden rounded-full bg-black/[.06] dark:bg-white/[.08]">
+                      <div className="mt-1 h-1 w-full max-w-32 overflow-hidden rounded-full bg-black/[.06] dark:bg-white/[.08] sm:w-32">
                         <div
                           className="h-full bg-amber-500 transition-all duration-500"
                           style={{ width: `${pct * 100}%` }}
@@ -224,9 +224,9 @@ export function EscalationsList() {
             {resolved.map((row) => (
               <li
                 key={row.id}
-                className="flex items-center justify-between gap-4 rounded-md border border-[var(--border)] px-4 py-2 text-sm"
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md border border-[var(--border)] px-4 py-2 text-sm"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${statusPill(row.status)}`}
                   >
@@ -239,7 +239,7 @@ export function EscalationsList() {
                     {row.agentName}
                   </Link>
                   <span className="text-xs text-[var(--muted)]">→</span>
-                  <span className="font-mono text-xs">{row.vendor}</span>
+                  <span className="font-mono text-xs break-all">{row.vendor}</span>
                   <span className="font-mono text-xs">
                     ${row.amount.toFixed(2)}
                   </span>
