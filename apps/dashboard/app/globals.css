@@ -31,3 +31,28 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+/* React Flow controls — match the dashboard theme tokens so the +/- and
+   fit-view buttons stay readable in both light and dark mode. */
+.react-flow__controls {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: var(--background);
+  color: var(--foreground);
+  border: none;
+  border-bottom: 1px solid var(--border);
+}
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+.react-flow__controls-button:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
