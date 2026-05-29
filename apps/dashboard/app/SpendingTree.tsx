@@ -15,7 +15,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { trustTierBadge } from "@/lib/status";
 
-interface TreeNodeData {
+type TreeNodeData = {
   id: string;
   name: string;
   expired: boolean;
@@ -25,7 +25,7 @@ interface TreeNodeData {
   totalApprovedSpend: number;
   counts: { approved: number; blocked: number; escalated: number };
   children: TreeNodeData[];
-}
+};
 
 interface TreeResponse {
   roots: TreeNodeData[];
