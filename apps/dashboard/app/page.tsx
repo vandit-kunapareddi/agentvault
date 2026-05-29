@@ -30,7 +30,7 @@ export default function HomePage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <header className="flex items-end justify-between">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">All agents</h1>
             <p className="mt-1 text-sm text-[var(--muted)]">
@@ -39,7 +39,7 @@ export default function HomePage() {
           </div>
           <Link
             href="/agents/new"
-            className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+            className="self-start whitespace-nowrap rounded-md border border-[var(--border)] px-3 py-1.5 text-sm hover:bg-black/[.04] dark:hover:bg-white/[.04]"
           >
             + New agent
           </Link>

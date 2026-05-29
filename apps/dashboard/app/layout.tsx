@@ -12,9 +12,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         <header className="border-b border-[var(--border)]">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-4 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
               <span className="inline-block h-6 w-6 rounded bg-[var(--accent)]" aria-hidden />
               AgentVault
@@ -31,7 +31,7 @@ export default function RootLayout({
               </Link>
               <Link
                 href="/agents/new"
-                className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-white hover:opacity-90"
+                className="whitespace-nowrap rounded-md bg-[var(--accent)] px-3 py-1.5 text-white hover:opacity-90"
               >
                 Register Agent
               </Link>
