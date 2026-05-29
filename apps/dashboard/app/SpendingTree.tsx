@@ -14,6 +14,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { trustTierBadge } from "@/lib/status";
+import {
+  healthDot,
+  healthLabel,
+  healthRing,
+  type AgentHealth,
+} from "@/lib/health";
 
 type TreeNodeData = {
   id: string;
@@ -22,7 +28,9 @@ type TreeNodeData = {
   dailyCap: number;
   trustTier: string;
   trustScore: number;
+  todayApprovedSpend: number;
   totalApprovedSpend: number;
+  health: AgentHealth;
   counts: { approved: number; blocked: number; escalated: number };
   children: TreeNodeData[];
 };
@@ -87,13 +95,37 @@ function layoutTree(roots: TreeNodeData[]): {
   return { nodes, edges };
 }
 
+const barColorByHealth: Record<AgentHealth, string> = {
+  healthy: "bg-emerald-500",
+  warning: "bg-amber-500",
+  critical: "bg-red-500",
+};
+
+function HealthDot({ health }: { health: AgentHealth }) {
+  return (
+    <span
+      className="relative inline-flex h-2.5 w-2.5 shrink-0"
+      title={healthLabel[health]}
+      aria-label={healthLabel[health]}
+    >
+      {health !== "healthy" && (
+        <span
+          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-70 ${healthRing[health]}`}
+        />
+      )}
+      <span
+        className={`relative inline-flex h-2.5 w-2.5 rounded-full ${healthDot[health]}`}
+      />
+    </span>
+  );
+}
+
 function AgentNode({ data }: NodeProps<Node<TreeNodeData>>) {
   const pct = Math.min(
     1,
-    data.dailyCap > 0 ? data.totalApprovedSpend / data.dailyCap : 0,
+    data.dailyCap > 0 ? data.todayApprovedSpend / data.dailyCap : 0,
   );
-  const barColor =
-    pct >= 0.9 ? "bg-amber-500" : pct >= 0.5 ? "bg-emerald-500" : "bg-emerald-400";
+  const barColor = barColorByHealth[data.health];
 
   return (
     <Link
@@ -103,7 +135,10 @@ function AgentNode({ data }: NodeProps<Node<TreeNodeData>>) {
     >
       <Handle type="target" position={Position.Top} className="!opacity-0" />
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-sm font-semibold">{data.name}</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <HealthDot health={data.health} />
+          <span className="truncate text-sm font-semibold">{data.name}</span>
+        </div>
         <span
           className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
             data.expired
@@ -122,7 +157,7 @@ function AgentNode({ data }: NodeProps<Node<TreeNodeData>>) {
         </span>
       </div>
       <div className="mt-2 text-xs text-[var(--muted)]">
-        ${data.totalApprovedSpend.toFixed(2)} of ${data.dailyCap.toFixed(2)}
+        ${data.todayApprovedSpend.toFixed(2)} of ${data.dailyCap.toFixed(2)} today
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/[.06] dark:bg-white/[.08]">
         <div
@@ -189,7 +224,7 @@ export function SpendingTree() {
   if (data.roots.length === 0) {
     return (
       <div className="flex h-[240px] items-center justify-center rounded-lg border border-dashed border-[var(--border)] text-sm text-[var(--muted)]">
-        Register agents to see the tree.
+        No agents registered yet. Add your first agent to get started.
       </div>
     );
   }

@@ -63,7 +63,7 @@ export function SpendCharts() {
           {!stats ? (
             <Placeholder text="Loading…" />
           ) : !hasDaily ? (
-            <Placeholder text="No approved spend yet." />
+            <Placeholder text="No spend data yet" />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.dailySpend} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
@@ -101,7 +101,7 @@ export function SpendCharts() {
           {!stats ? (
             <Placeholder text="Loading…" />
           ) : !hasAgents ? (
-            <Placeholder text="No approved spend yet." />
+            <Placeholder text="No spend data yet" />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

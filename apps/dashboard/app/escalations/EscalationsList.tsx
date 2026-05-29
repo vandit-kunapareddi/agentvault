@@ -135,7 +135,7 @@ export function EscalationsList() {
 
         {pending.length === 0 ? (
           <div className="rounded-lg border border-dashed border-[var(--border)] p-10 text-center text-sm text-[var(--muted)]">
-            No escalations awaiting decision.
+            All clear — no payments waiting for review.
           </div>
         ) : (
           <ul className="flex flex-col gap-3">

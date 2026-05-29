@@ -4,6 +4,7 @@ import { SimpleTrustProvider } from "@agentvault/trust";
 import { prisma } from "@/lib/db";
 import { signCredential } from "@/lib/credential";
 import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";
+import { getAgentMetrics } from "@/lib/agentMetrics";
 
 const trustProvider = new SimpleTrustProvider({
   minScore: Number(process.env.MIN_TRUST_SCORE) || 50,
@@ -17,11 +18,17 @@ export async function GET() {
   const agents = await prisma.agent.findMany({
     orderBy: { createdAt: "desc" },
   });
+  const metrics = await getAgentMetrics();
   return NextResponse.json(
-    agents.map((agent) => ({
-      ...agent,
-      approvedVendors: splitVendors(agent.approvedVendors),
-    })),
+    agents.map((agent) => {
+      const m = metrics.get(agent.id);
+      return {
+        ...agent,
+        approvedVendors: splitVendors(agent.approvedVendors),
+        health: m?.health ?? "healthy",
+        transactionCount: m?.transactionCount ?? 0,
+      };
+    }),
   );
 }
 

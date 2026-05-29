@@ -130,7 +130,9 @@ export function TransactionList({
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-lg border border-dashed border-[var(--border)] p-10 text-center text-sm text-[var(--muted)]">
-          No transactions matching this filter yet.
+          {filter === "all"
+            ? "No transactions yet. Register an agent and run your first payment to see it here."
+            : `No ${FILTERS.find((f) => f.value === filter)?.label.toLowerCase() ?? filter} transactions yet.`}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-[var(--border)]">
