@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { POLICY_TEMPLATES, type PolicyTemplate } from "@/lib/policyTemplates";
 
 function defaultExpiresAt(): string {
   const now = new Date();
@@ -21,6 +22,7 @@ export default function NewAgentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [template, setTemplate] = useState<string>("");
   const [name, setName] = useState("");
   const [authorizedBy, setAuthorizedBy] = useState("");
   const [dailyCap, setDailyCap] = useState("10.00");
@@ -43,6 +45,22 @@ export default function NewAgentPage() {
   }
   function removeVendorLimitRow(idx: number) {
     setVendorLimitRows((rows) => rows.filter((_, i) => i !== idx));
+  }
+  function applyTemplate(t: PolicyTemplate) {
+    setDailyCap(t.dailyCap.toFixed(2));
+    setPerTxLimit(t.perTxLimit.toFixed(2));
+    setVendorsRaw(t.vendors.join("\n"));
+    setVendorLimitRows(
+      Object.entries(t.vendorLimits).map(([vendor, limit]) => ({
+        vendor,
+        limit: String(limit),
+      })),
+    );
+  }
+  function handleTemplateChange(id: string) {
+    setTemplate(id);
+    const t = POLICY_TEMPLATES.find((p) => p.id === id);
+    if (t) applyTemplate(t);
   }
   function buildVendorLimits(): Record<string, number> {
     const out: Record<string, number> = {};
@@ -112,6 +130,24 @@ export default function NewAgentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <Field
+          label="Start from a template"
+          hint="Optional — picks sensible starting values for daily cap, per-tx limit, approved vendors, and per-vendor limits. Every field stays editable."
+        >
+          <select
+            value={template}
+            onChange={(e) => handleTemplateChange(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">— Start from scratch —</option>
+            {POLICY_TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} — {t.description}
+              </option>
+            ))}
+          </select>
+        </Field>
+
         <Field label="Agent name" hint="Display name shown in the dashboard.">
           <input
             required
