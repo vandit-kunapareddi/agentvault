@@ -26,9 +26,35 @@ export default function NewAgentPage() {
   const [dailyCap, setDailyCap] = useState("10.00");
   const [perTxLimit, setPerTxLimit] = useState("0.50");
   const [vendorsRaw, setVendorsRaw] = useState("exa.ai\nhyperbolic.xyz\ncoingecko.com");
+  const [vendorLimitRows, setVendorLimitRows] = useState<
+    { vendor: string; limit: string }[]
+  >([]);
   const [expiresAt, setExpiresAt] = useState(defaultExpiresAt);
   const [parentAgentId, setParentAgentId] = useState("");
   const [parents, setParents] = useState<AgentOption[]>([]);
+
+  function addVendorLimitRow() {
+    setVendorLimitRows((rows) => [...rows, { vendor: "", limit: "" }]);
+  }
+  function updateVendorLimitRow(idx: number, patch: Partial<{ vendor: string; limit: string }>) {
+    setVendorLimitRows((rows) =>
+      rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)),
+    );
+  }
+  function removeVendorLimitRow(idx: number) {
+    setVendorLimitRows((rows) => rows.filter((_, i) => i !== idx));
+  }
+  function buildVendorLimits(): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const row of vendorLimitRows) {
+      const vendor = row.vendor.trim().toLowerCase();
+      const amount = Number(row.limit);
+      if (!vendor) continue;
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      out[vendor] = Math.round(amount * 100) / 100;
+    }
+    return out;
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +74,7 @@ export default function NewAgentPage() {
     setError(null);
     setSubmitting(true);
     try {
+      const vendorLimits = buildVendorLimits();
       const res = await fetch("/api/agents", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -57,6 +84,7 @@ export default function NewAgentPage() {
           dailyCap: Number(dailyCap),
           perTxLimit: Number(perTxLimit),
           approvedVendors: vendorsRaw,
+          vendorLimits: Object.keys(vendorLimits).length > 0 ? vendorLimits : undefined,
           expiresAt: new Date(expiresAt).toISOString(),
           parentAgentId: parentAgentId || undefined,
         }),
@@ -142,6 +170,52 @@ export default function NewAgentPage() {
             rows={5}
             className={`${inputClass} font-mono text-xs`}
           />
+        </Field>
+
+        <Field
+          label="Per-vendor daily limits"
+          hint="Optional — leave empty to use global limits only. When set, today's spend with that specific vendor cannot exceed this limit, on top of the global daily cap."
+        >
+          <div className="flex flex-col gap-2">
+            {vendorLimitRows.length === 0 && (
+              <p className="text-xs text-[var(--muted)]">No per-vendor limits configured.</p>
+            )}
+            {vendorLimitRows.map((row, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="exa.ai"
+                  value={row.vendor}
+                  onChange={(e) => updateVendorLimitRow(idx, { vendor: e.target.value })}
+                  className={`${inputClass} flex-1 font-mono text-xs`}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="$ per day"
+                  value={row.limit}
+                  onChange={(e) => updateVendorLimitRow(idx, { limit: e.target.value })}
+                  className={`${inputClass} w-32`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeVendorLimitRow(idx)}
+                  aria-label="Remove vendor limit"
+                  className="rounded-md border border-[var(--border)] px-2.5 py-2 text-xs text-[var(--muted)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addVendorLimitRow}
+              className="self-start rounded-md border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+            >
+              + Add vendor limit
+            </button>
+          </div>
         </Field>
 
         <Field label="Expires at" hint="After this time the credential will no longer be valid.">

@@ -8,6 +8,14 @@ export interface CredentialPayload {
   dailyCap: number;
   perTxLimit: number;
   approvedVendors: string[];
+  /**
+   * Optional per-vendor daily spend caps, keyed by vendor hostname. When set,
+   * a payment is blocked if today's spend with that specific vendor plus the
+   * current amount would exceed the per-vendor limit, independently of the
+   * global daily cap. Vendors not present in the map fall back to the global
+   * limits.
+   */
+  vendorLimits?: Record<string, number>;
   supportedProtocols: Protocol[];
   issuedAt: number;
   expiresAt: number;

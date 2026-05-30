@@ -17,6 +17,7 @@ export interface SignCredentialInput {
   dailyCap: number;
   perTxLimit: number;
   approvedVendors: string[];
+  vendorLimits?: Record<string, number> | null;
   supportedProtocols?: Protocol[];
   expiresAt: Date;
 }
@@ -40,5 +41,8 @@ export function signCredential(input: SignCredentialInput): string {
     issuedAt: nowSec,
     expiresAt: expSec,
   };
+  if (input.vendorLimits && Object.keys(input.vendorLimits).length > 0) {
+    payload.vendorLimits = input.vendorLimits;
+  }
   return jwt.sign(payload, getSecret(), { expiresIn: ttl });
 }

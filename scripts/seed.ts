@@ -47,6 +47,7 @@ interface SeedAgent {
   trustTier: string;
   trustScore: number;
   wallet: string;
+  vendorLimits?: Record<string, number>;
 }
 
 const SEED_AGENTS: SeedAgent[] = [
@@ -69,6 +70,7 @@ const SEED_AGENTS: SeedAgent[] = [
     trustTier: "verified",
     trustScore: 85,
     wallet: "0x" + "b2".repeat(20),
+    vendorLimits: { "exa.ai": 1.0, "firecrawl.dev": 3.0 },
   },
   {
     id: "seed-compute",
@@ -79,6 +81,7 @@ const SEED_AGENTS: SeedAgent[] = [
     trustTier: "verified",
     trustScore: 88,
     wallet: "0x" + "c3".repeat(20),
+    vendorLimits: { "hyperbolic.xyz": 2.0 },
   },
   {
     id: "seed-shopping",
@@ -122,22 +125,22 @@ const AUTHORIZED_BY = "cl@shivamsinghal.me";
 function makeCredential(a: SeedAgent, expiresAt: Date): string {
   const nowSec = Math.floor(NOW / 1000);
   const expSec = Math.floor(expiresAt.getTime() / 1000);
-  return jwt.sign(
-    {
-      agentId: a.id,
-      agentName: a.name,
-      walletAddress: a.wallet,
-      authorizedBy: AUTHORIZED_BY,
-      dailyCap: a.dailyCap,
-      perTxLimit: a.perTxLimit,
-      approvedVendors: [...VENDORS],
-      supportedProtocols: ["x402", "mpp", "acp"],
-      issuedAt: nowSec,
-      expiresAt: expSec,
-    },
-    SECRET,
-    { expiresIn: expSec - nowSec },
-  );
+  const payload: Record<string, unknown> = {
+    agentId: a.id,
+    agentName: a.name,
+    walletAddress: a.wallet,
+    authorizedBy: AUTHORIZED_BY,
+    dailyCap: a.dailyCap,
+    perTxLimit: a.perTxLimit,
+    approvedVendors: [...VENDORS],
+    supportedProtocols: ["x402", "mpp", "acp"],
+    issuedAt: nowSec,
+    expiresAt: expSec,
+  };
+  if (a.vendorLimits && Object.keys(a.vendorLimits).length > 0) {
+    payload.vendorLimits = a.vendorLimits;
+  }
+  return jwt.sign(payload, SECRET, { expiresIn: expSec - nowSec });
 }
 
 interface TxInsert {
@@ -190,6 +193,7 @@ async function insertAgents(): Promise<void> {
         dailyCap: a.dailyCap,
         perTxLimit: a.perTxLimit,
         approvedVendors: APPROVED_VENDORS,
+        vendorLimits: a.vendorLimits ?? undefined,
         expiresAt,
         credential: makeCredential(a, expiresAt),
       },
@@ -261,7 +265,9 @@ function buildTodayApproved(): TxInsert[] {
   pushApproved(out, "seed-research", "coingecko.com", 0.006, minAgo(70));
 
   // Compute (a couple approved today; critical state comes from recent blocked)
-  pushApproved(out, "seed-compute", "hyperbolic.xyz", 2.2, minAgo(200));
+  // Hyperbolic kept under the $2.00 per-vendor limit so the limit visualises
+  // as nearly-full on the agent detail page.
+  pushApproved(out, "seed-compute", "hyperbolic.xyz", 1.5, minAgo(200));
   pushApproved(out, "seed-compute", "firecrawl.dev", 0.02, minAgo(130));
 
   // Shopping (warning: ~88% of $15 daily cap today)
@@ -318,6 +324,30 @@ function buildBlocked(): TxInsert[] {
     trustTier: "verified",
     reason: 'Vendor "scraperapi.com" is not on the approved list',
     createdAt: new Date(TODAY_START_UTC - 1 * DAY + 11 * HOUR),
+  });
+
+  // Per-vendor limit blocks — surface the new check in the transaction log.
+  out.push({
+    agentId: "seed-compute",
+    vendor: "hyperbolic.xyz",
+    amount: 0.8,
+    status: "blocked",
+    protocol: "x402",
+    trustTier: "verified",
+    reason:
+      "Vendor limit reached: $1.50 of $2.00 daily limit used for hyperbolic.xyz",
+    createdAt: new Date(NOW - 30 * MIN),
+  });
+  out.push({
+    agentId: "seed-research",
+    vendor: "exa.ai",
+    amount: 1.2,
+    status: "blocked",
+    protocol: "x402",
+    trustTier: "verified",
+    reason:
+      "Vendor limit reached: $0.04 of $1.00 daily limit used for exa.ai",
+    createdAt: new Date(NOW - 50 * MIN),
   });
 
   return out;

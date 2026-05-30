@@ -22,6 +22,7 @@ model Agent {
   dailyCap        Float
   perTxLimit      Float
   approvedVendors String
+  vendorLimits    Json?
   expiresAt       DateTime
   createdAt       DateTime      @default(now())
   transactions    Transaction[]

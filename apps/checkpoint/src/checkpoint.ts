@@ -7,7 +7,10 @@ import type {
 } from "@agentvault/types";
 import { prisma } from "./db.js";
 import { verifyCredential } from "./credential.js";
-import { getTodaysApprovedSpend } from "./budget.js";
+import {
+  getTodaysApprovedSpend,
+  getTodaysApprovedSpendForVendor,
+} from "./budget.js";
 import { isApprovedVendor } from "./whitelist.js";
 import { holdAndAwait } from "./escalation.js";
 import { gateAgent } from "./trust.js";
@@ -195,6 +198,27 @@ export async function evaluateCheckpoint(
   if (!isApprovedVendor(vendor, payload.approvedVendors)) {
     const reason = `Vendor "${vendor}" is not on the approved list`;
     return escalateAndWait(payload, vendor, amount, protocol, trustTier, req.endpoint, reason);
+  }
+
+  const vendorLimits = payload.vendorLimits;
+  const vendorLimit =
+    vendorLimits && typeof vendorLimits[vendor] === "number" && vendorLimits[vendor] > 0
+      ? vendorLimits[vendor]
+      : null;
+  if (vendorLimit !== null) {
+    try {
+      const vendorSpent = await getTodaysApprovedSpendForVendor(payload.agentId, vendor);
+      if (vendorSpent + amount > vendorLimit) {
+        const reason = `Vendor limit reached: $${vendorSpent.toFixed(2)} of $${vendorLimit.toFixed(2)} daily limit used for ${vendor}`;
+        await logTransaction(payload.agentId, vendor, amount, "blocked", protocol, trustTier, reason);
+        return respond("blocked", { protocol, trustTier, reason });
+      }
+    } catch (err) {
+      console.error("[checkpoint] vendor limit check failed", err);
+      const reason = `Vendor limit check failed for ${vendor} — blocking to be safe`;
+      await logTransaction(payload.agentId, vendor, amount, "blocked", protocol, trustTier, reason);
+      return respond("blocked", { protocol, trustTier, reason });
+    }
   }
 
   const spent = await getTodaysApprovedSpend(payload.agentId);

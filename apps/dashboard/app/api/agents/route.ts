@@ -4,6 +4,7 @@ import { SimpleTrustProvider } from "@agentvault/trust";
 import { prisma } from "@/lib/db";
 import { signCredential } from "@/lib/credential";
 import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";
+import { parseVendorLimits } from "@/lib/vendorLimits";
 import { getAgentMetrics } from "@/lib/agentMetrics";
 
 const trustProvider = new SimpleTrustProvider({
@@ -38,6 +39,7 @@ interface CreateAgentBody {
   dailyCap?: unknown;
   perTxLimit?: unknown;
   approvedVendors?: unknown;
+  vendorLimits?: unknown;
   expiresAt?: unknown;
   parentAgentId?: unknown;
   walletAddress?: unknown;
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest) {
   const perTxLimit = Number(body.perTxLimit);
   const vendorsRaw = typeof body.approvedVendors === "string" ? body.approvedVendors : "";
   const vendors = parseVendorInput(vendorsRaw);
+  const vendorLimits = parseVendorLimits(body.vendorLimits);
   const expiresAt =
     typeof body.expiresAt === "string" ? new Date(body.expiresAt) : new Date(NaN);
   const parentAgentId =
@@ -114,6 +117,7 @@ export async function POST(req: NextRequest) {
       dailyCap,
       perTxLimit,
       approvedVendors: serializeVendors(vendors),
+      vendorLimits: vendorLimits ?? undefined,
       expiresAt,
       parentAgentId: parentAgentId ?? undefined,
     },
@@ -127,6 +131,7 @@ export async function POST(req: NextRequest) {
     dailyCap: created.dailyCap,
     perTxLimit: created.perTxLimit,
     approvedVendors: vendors,
+    vendorLimits,
     expiresAt: created.expiresAt,
   });
 

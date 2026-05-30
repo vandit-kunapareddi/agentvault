@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { splitVendors } from "@/lib/vendors";
+import { readVendorLimits } from "@/lib/vendorLimits";
 import { CredentialField } from "./CredentialField";
 import { TransactionList } from "@/app/transactions/TransactionList";
 
@@ -34,6 +35,27 @@ export default async function AgentDetailPage({
 
   const vendors = splitVendors(agent.approvedVendors);
   const expired = agent.expiresAt.getTime() <= Date.now();
+
+  const vendorLimits = readVendorLimits(agent.vendorLimits);
+  const limitVendors = Object.keys(vendorLimits).sort();
+  const spentByVendor = new Map<string, number>();
+  if (limitVendors.length > 0) {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const groups = await prisma.transaction.groupBy({
+      by: ["vendor"],
+      where: {
+        agentId: agent.id,
+        status: "approved",
+        createdAt: { gte: todayStart },
+        vendor: { in: limitVendors },
+      },
+      _sum: { amount: true },
+    });
+    for (const g of groups) {
+      spentByVendor.set(g.vendor, g._sum.amount ?? 0);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -84,6 +106,54 @@ export default async function AgentDetailPage({
           </ul>
         )}
       </section>
+
+      {limitVendors.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
+            Per-vendor daily limits
+          </h2>
+          <p className="text-xs text-[var(--muted)]">
+            Spending caps that apply on top of the global daily cap. A payment is
+            blocked if either limit is exceeded.
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+            <table className="w-full min-w-[480px] text-sm">
+              <thead className="bg-black/[.02] text-left text-xs uppercase tracking-wide text-[var(--muted)] dark:bg-white/[.02]">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Vendor</th>
+                  <th className="px-4 py-3 font-medium text-right">Daily limit</th>
+                  <th className="px-4 py-3 font-medium text-right">Spent today</th>
+                  <th className="px-4 py-3 font-medium text-right">Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                {limitVendors.map((v) => {
+                  const limit = vendorLimits[v];
+                  const spent = spentByVendor.get(v) ?? 0;
+                  const remaining = Math.max(0, limit - spent);
+                  const ratio = limit > 0 ? spent / limit : 0;
+                  const remainingClass =
+                    ratio >= 1
+                      ? "text-red-600 dark:text-red-400"
+                      : ratio >= 0.8
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "";
+                  return (
+                    <tr key={v} className="border-t border-[var(--border)]">
+                      <td className="px-4 py-3 font-mono text-xs">{v}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(limit)}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(spent)}</td>
+                      <td className={`px-4 py-3 text-right ${remainingClass}`}>
+                        {formatCurrency(remaining)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
