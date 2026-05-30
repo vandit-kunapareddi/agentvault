@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { buildInsights, type Insight } from "@/lib/insights";
+import { getAgentMetrics } from "@/lib/agentMetrics";
+import {
+  buildInsights,
+  type Insight,
+  type InsightForecast,
+} from "@/lib/insights";
 
 const LOOKBACK_DAYS = 7;
 
@@ -12,7 +17,7 @@ export interface InsightsResponse {
 export async function GET() {
   const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
 
-  const [transactions, agents] = await Promise.all([
+  const [transactions, agents, metrics] = await Promise.all([
     prisma.transaction.findMany({
       where: { createdAt: { gte: since }, reason: { not: null } },
       select: {
@@ -27,9 +32,19 @@ export async function GET() {
     prisma.agent.findMany({
       select: { id: true, name: true, dailyCap: true, perTxLimit: true },
     }),
+    getAgentMetrics(),
   ]);
 
-  const insights = buildInsights({ transactions, agents });
+  const forecasts = new Map<string, InsightForecast>();
+  for (const [id, m] of metrics) {
+    forecasts.set(id, {
+      avgDaily: m.forecast.avgDaily,
+      willExceedCap: m.forecast.willExceedCap,
+      nearCap: m.forecast.nearCap,
+    });
+  }
+
+  const insights = buildInsights({ transactions, agents, forecasts });
 
   const res: InsightsResponse = { insights, windowDays: LOOKBACK_DAYS };
   return NextResponse.json(res);

@@ -3,6 +3,7 @@ import { SpendingTree } from "./SpendingTree";
 import { SpendCharts } from "./SpendCharts";
 import { AgentTable } from "./AgentTable";
 import { Insights } from "./Insights";
+import { SpendForecast } from "./SpendForecast";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,18 @@ export default function HomePage() {
           </p>
         </header>
         <Insights />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <header>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
+            Spend forecast
+          </h2>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            Projection from each agent&apos;s average daily approved spend over the last 7 days.
+          </p>
+        </header>
+        <SpendForecast />
       </section>
 
       <section className="flex flex-col gap-3">

@@ -28,6 +28,7 @@ export async function GET() {
         approvedVendors: splitVendors(agent.approvedVendors),
         health: m?.health ?? "healthy",
         transactionCount: m?.transactionCount ?? 0,
+        forecast: m?.forecast,
       };
     }),
   );

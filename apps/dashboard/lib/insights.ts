@@ -35,6 +35,12 @@ export interface InsightAgent {
   perTxLimit: number;
 }
 
+export interface InsightForecast {
+  avgDaily: number;
+  willExceedCap: boolean;
+  nearCap: boolean;
+}
+
 const WHITELIST_RE = /Vendor "([^"]+)" is not on the approved list/;
 const PER_TX_RE = /Amount \$([\d.]+) exceeds per-transaction limit \$([\d.]+)/;
 const DAILY_CAP_RE = /(?:Would exceed|Near) daily cap/;
@@ -53,6 +59,7 @@ function plural(n: number, word: string): string {
 export function buildInsights(input: {
   transactions: InsightTxRow[];
   agents: InsightAgent[];
+  forecasts?: Map<string, InsightForecast>;
 }): Insight[] {
   const agentMap = new Map(input.agents.map((a) => [a.id, a]));
 
@@ -199,6 +206,38 @@ export function buildInsights(input: {
       message: `Blocked ${plural(v.count, "time")} by the $${v.limit.toFixed(2)} daily limit for ${v.vendor}.`,
       suggestion: `Raise or remove the per-vendor limit for ${v.vendor} if this volume is expected.`,
     });
+  }
+
+  if (input.forecasts) {
+    for (const [agentId, f] of input.forecasts) {
+      if (!f.willExceedCap && !f.nearCap) continue;
+      const agent = agentMap.get(agentId);
+      if (!agent) continue;
+      const suggestedCap = Math.ceil(f.avgDaily * 1.5 * 100) / 100;
+      if (f.willExceedCap) {
+        out.push({
+          id: `forecast:${agentId}`,
+          type: "forecast",
+          severity: "critical",
+          agentId,
+          agentName: agent.name,
+          count: 1,
+          message: `Averaging $${f.avgDaily.toFixed(2)}/day this week — on track to exceed the $${agent.dailyCap.toFixed(2)} daily cap most days.`,
+          suggestion: `Either raise the cap to about $${suggestedCap.toFixed(2)} (based on current pace) or investigate whether this agent is overstepping.`,
+        });
+      } else {
+        out.push({
+          id: `forecast:${agentId}`,
+          type: "forecast",
+          severity: "warning",
+          agentId,
+          agentName: agent.name,
+          count: 1,
+          message: `Averaging $${f.avgDaily.toFixed(2)}/day this week — close to its $${agent.dailyCap.toFixed(2)} daily cap.`,
+          suggestion: `Keep an eye on it. If this pace continues, plan to raise the cap or tighten which vendors it pays.`,
+        });
+      }
+    }
   }
 
   const sevOrder: Record<InsightSeverity, number> = {
