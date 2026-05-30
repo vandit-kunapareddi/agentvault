@@ -105,9 +105,11 @@ export function Insights() {
                 {ins.suggestion}
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-black/[.05] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)] dark:bg-white/[.06]">
-              {ins.count}×
-            </span>
+            {ins.count > 1 && (
+              <span className="shrink-0 rounded-full bg-black/[.05] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)] dark:bg-white/[.06]">
+                {ins.count}×
+              </span>
+            )}
           </div>
         </li>
       ))}

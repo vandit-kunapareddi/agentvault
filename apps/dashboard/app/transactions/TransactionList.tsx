@@ -16,19 +16,37 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "blocked", label: "Blocked" },
 ];
 
-function formatTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
+function formatAbsolute(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "medium",
   });
 }
 
-function formatDate(iso: string) {
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 30_000) return "just now";
+  if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`;
+  if (diff < 60 * 60 * 1000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  if (diff < 7 * 24 * 60 * 60 * 1000) {
+    return `${Math.floor(diff / 86_400_000)}d ago`;
+  }
   const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
+}
+
+interface TransactionCounts {
+  all: number;
+  approved: number;
+  blocked: number;
+  escalated: number;
+  recognized: number;
 }
 
 export function TransactionList({
@@ -42,6 +60,7 @@ export function TransactionList({
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [rows, setRows] = useState<TransactionRow[] | null>(null);
+  const [counts, setCounts] = useState<TransactionCounts | null>(null);
   const [error, setError] = useState<string | null>(null);
   const prevIdsRef = useRef<Set<string>>(new Set());
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
@@ -52,13 +71,19 @@ export function TransactionList({
     if (agentId) params.set("agentId", agentId);
     if (filter !== "all") params.set("status", filter);
     params.set("limit", String(limit));
-    const url = `/api/transactions?${params.toString()}`;
+    const rowsUrl = `/api/transactions?${params.toString()}`;
+    const countsUrl = `/api/transactions/counts${agentId ? `?agentId=${agentId}` : ""}`;
 
     async function tick() {
       try {
-        const data = (await fetch(url, { cache: "no-store" }).then((r) =>
-          r.json(),
-        )) as TransactionRow[];
+        const [data, c] = await Promise.all([
+          fetch(rowsUrl, { cache: "no-store" }).then(
+            (r) => r.json() as Promise<TransactionRow[]>,
+          ),
+          fetch(countsUrl, { cache: "no-store" }).then(
+            (r) => r.json() as Promise<TransactionCounts>,
+          ),
+        ]);
         if (cancelled) return;
         const prev = prevIdsRef.current;
         const isFirst = prev.size === 0;
@@ -68,6 +93,7 @@ export function TransactionList({
         }
         prevIdsRef.current = new Set(data.map((r) => r.id));
         setRows(data);
+        setCounts(c);
         if (fresh.size > 0) {
           setHighlightIds(fresh);
           setTimeout(() => {
@@ -94,20 +120,26 @@ export function TransactionList({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-1.5">
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setFilter(f.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                filter === f.value
-                  ? "bg-[var(--foreground)] text-[var(--background)]"
-                  : "border border-[var(--border)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+          {FILTERS.map((f) => {
+            const count = counts ? counts[f.value] : null;
+            return (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilter(f.value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                  filter === f.value
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "border border-[var(--border)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+                }`}
+              >
+                {f.label}
+                {count !== null && (
+                  <span className="ml-1.5 opacity-70">{count}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
           <span className="relative inline-flex h-2 w-2">
@@ -160,9 +192,11 @@ export function TransactionList({
                         : "hover:bg-black/[.02] dark:hover:bg-white/[.02]"
                     }`}
                   >
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-[var(--muted)]">
-                      <div>{formatTime(row.createdAt)}</div>
-                      <div className="text-[10px] opacity-70">{formatDate(row.createdAt)}</div>
+                    <td
+                      className="whitespace-nowrap px-4 py-3 font-mono text-xs text-[var(--muted)]"
+                      title={formatAbsolute(row.createdAt)}
+                    >
+                      {formatRelative(row.createdAt)}
                     </td>
                     {showAgentColumn && (
                       <td className="px-4 py-3">

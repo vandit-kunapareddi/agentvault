@@ -4,12 +4,15 @@ import { SpendCharts } from "./SpendCharts";
 import { AgentTable } from "./AgentTable";
 import { Insights } from "./Insights";
 import { SpendForecast } from "./SpendForecast";
+import { Kpis } from "./Kpis";
 
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-10">
+      <Kpis />
+
       <section className="flex flex-col gap-3">
         <header className="flex items-end justify-between">
           <div>

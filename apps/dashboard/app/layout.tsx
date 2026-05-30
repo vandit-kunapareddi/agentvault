@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HeaderNav } from "./HeaderNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentVault",
-  description: "Trust and control layer for AI agents making x402 payments.",
+  title: "AgentVault — Universal payment & control layer for AI agents",
+  description:
+    "One SDK for any agentic payment protocol. Trust verification, budget enforcement, per-vendor limits, cross-agent spend visibility, and human escalation built in.",
 };
 
 export default function RootLayout({
@@ -19,23 +21,7 @@ export default function RootLayout({
               <span className="inline-block h-6 w-6 rounded bg-[var(--accent)]" aria-hidden />
               AgentVault
             </Link>
-            <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm sm:gap-6">
-              <Link href="/" className="hover:text-[var(--accent)]">
-                Dashboard
-              </Link>
-              <Link href="/transactions" className="hover:text-[var(--accent)]">
-                Transactions
-              </Link>
-              <Link href="/escalations" className="hover:text-[var(--accent)]">
-                Escalations
-              </Link>
-              <Link
-                href="/agents/new"
-                className="whitespace-nowrap rounded-md bg-[var(--accent)] px-3 py-1.5 text-white hover:opacity-90"
-              >
-                Register Agent
-              </Link>
-            </nav>
+            <HeaderNav />
           </div>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-10">{children}</main>

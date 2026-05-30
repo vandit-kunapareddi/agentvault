@@ -78,6 +78,17 @@ export function SpendForecast() {
     );
   }
 
+  const statusRank: Record<Status, number> = {
+    "over-pace": 0,
+    "near-cap": 1,
+    "on-track": 2,
+  };
+  const sorted = [...rows].sort((a, b) => {
+    const r = statusRank[statusOf(a.forecast)] - statusRank[statusOf(b.forecast)];
+    if (r !== 0) return r;
+    return (b.forecast?.avgDaily ?? 0) - (a.forecast?.avgDaily ?? 0);
+  });
+
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
       <table className="w-full min-w-[560px] text-sm">
@@ -92,7 +103,7 @@ export function SpendForecast() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => {
+          {sorted.map((r) => {
             const f = r.forecast;
             const status = statusOf(f);
             return (
