@@ -350,6 +350,29 @@ function buildBlocked(): TxInsert[] {
     createdAt: new Date(NOW - 50 * MIN),
   });
 
+  // Extra repeats so the insights panel has multiple patterns to surface.
+  out.push({
+    agentId: "seed-compute",
+    vendor: "hyperbolic.xyz",
+    amount: 10.0,
+    status: "blocked",
+    protocol: "x402",
+    trustTier: "verified",
+    reason: "Amount $10.00 exceeds per-transaction limit $8.00",
+    createdAt: new Date(TODAY_START_UTC - 2 * DAY + 9 * HOUR),
+  });
+  out.push({
+    agentId: "seed-compute",
+    vendor: "hyperbolic.xyz",
+    amount: 1.0,
+    status: "blocked",
+    protocol: "x402",
+    trustTier: "verified",
+    reason:
+      "Vendor limit reached: $1.50 of $2.00 daily limit used for hyperbolic.xyz",
+    createdAt: new Date(NOW - 95 * MIN),
+  });
+
   return out;
 }
 

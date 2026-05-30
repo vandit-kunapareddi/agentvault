@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SpendingTree } from "./SpendingTree";
 import { SpendCharts } from "./SpendCharts";
 import { AgentTable } from "./AgentTable";
+import { Insights } from "./Insights";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,18 @@ export default function HomePage() {
           </div>
         </header>
         <SpendingTree />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <header>
+          <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
+            Suggestions
+          </h2>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            Patterns spotted from the last 7 days of blocks and escalations.
+          </p>
+        </header>
+        <Insights />
       </section>
 
       <section className="flex flex-col gap-3">
