@@ -294,11 +294,18 @@ export function AgentForm({
 
       <Field
         label="Per-vendor daily limits"
-        hint="Optional — leave empty to use global limits only. When set, today's spend with that specific vendor cannot exceed this limit, on top of the global daily cap."
+        hint="Optional — applied on top of the global daily cap. Once today's spend with a listed vendor hits its limit, further payments to that vendor are blocked, even if the global cap still has room. Vendors not in this list just use the global limit."
       >
         <div className="flex flex-col gap-2">
           {vendorLimitRows.length === 0 && (
             <p className="text-xs text-[var(--muted)]">No per-vendor limits configured.</p>
+          )}
+          {vendorLimitRows.length > 0 && (
+            <div className="flex items-center gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
+              <span className="flex-1">Vendor</span>
+              <span className="w-32 text-right">Daily limit (USD)</span>
+              <span className="w-9" aria-hidden />
+            </div>
           )}
           {vendorLimitRows.map((row, idx) => (
             <div key={idx} className="flex items-center gap-2">
@@ -309,15 +316,20 @@ export function AgentForm({
                 onChange={(e) => updateVendorLimitRow(idx, { vendor: e.target.value })}
                 className={`${inputClass} flex-1 font-mono text-xs`}
               />
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="$ per day"
-                value={row.limit}
-                onChange={(e) => updateVendorLimitRow(idx, { limit: e.target.value })}
-                className={`${inputClass} w-32`}
-              />
+              <div className="relative w-32">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--muted)]">
+                  $
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={row.limit}
+                  onChange={(e) => updateVendorLimitRow(idx, { limit: e.target.value })}
+                  className={`${inputClass} pl-6 text-right`}
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => removeVendorLimitRow(idx)}
