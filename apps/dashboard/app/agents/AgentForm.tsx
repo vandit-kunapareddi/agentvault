@@ -65,7 +65,7 @@ export function AgentForm({
   mode,
   agentId,
   initial,
-  backHref = "/",
+  backHref = "/dashboard",
 }: AgentFormProps) {
   const router = useRouter();
   const isEdit = mode === "edit";

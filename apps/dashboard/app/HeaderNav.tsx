@@ -10,7 +10,7 @@ interface SummaryResponse {
 }
 
 const LINKS = [
-  { label: "Dashboard", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Transactions", href: "/transactions" },
   { label: "Escalations", href: "/escalations", badge: "pendingEscalations" as const },
 ];

@@ -62,7 +62,7 @@ export default async function AgentDetailPage({
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
+          <Link href="/dashboard" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
             ← All agents
           </Link>
           <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{agent.name}</h1>
