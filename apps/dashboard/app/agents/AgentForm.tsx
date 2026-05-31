@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { POLICY_TEMPLATES, type PolicyTemplate } from "@/lib/policyTemplates";
+import { parseVendorInput } from "@/lib/vendors";
 
 function defaultExpiresAtLocal(): string {
   const now = new Date();
@@ -296,58 +297,103 @@ export function AgentForm({
         label="Per-vendor daily limits"
         hint="Optional — applied on top of the global daily cap. Once today's spend with a listed vendor hits its limit, further payments to that vendor are blocked, even if the global cap still has room. Vendors not in this list just use the global limit."
       >
-        <div className="flex flex-col gap-2">
-          {vendorLimitRows.length === 0 && (
-            <p className="text-xs text-[var(--muted)]">No per-vendor limits configured.</p>
-          )}
-          {vendorLimitRows.length > 0 && (
-            <div className="flex items-center gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
-              <span className="flex-1">Vendor</span>
-              <span className="w-32 text-right">Daily limit (USD)</span>
-              <span className="w-9" aria-hidden />
-            </div>
-          )}
-          {vendorLimitRows.map((row, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="exa.ai"
-                value={row.vendor}
-                onChange={(e) => updateVendorLimitRow(idx, { vendor: e.target.value })}
-                className={`${inputClass} flex-1 font-mono text-xs`}
-              />
-              <div className="relative w-32">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--muted)]">
-                  $
-                </span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={row.limit}
-                  onChange={(e) => updateVendorLimitRow(idx, { limit: e.target.value })}
-                  className={`${inputClass} pl-6 text-right`}
-                />
-              </div>
+        {(() => {
+          const approvedVendorList = parseVendorInput(vendorsRaw).map((v) =>
+            v.toLowerCase(),
+          );
+          const hasApproved = approvedVendorList.length > 0;
+          return (
+            <div className="flex flex-col gap-2">
+              {!hasApproved && vendorLimitRows.length === 0 && (
+                <p className="text-xs text-[var(--muted)]">
+                  Add at least one approved vendor above first.
+                </p>
+              )}
+              {hasApproved && vendorLimitRows.length === 0 && (
+                <p className="text-xs text-[var(--muted)]">
+                  No per-vendor limits configured.
+                </p>
+              )}
+              {vendorLimitRows.length > 0 && (
+                <div className="flex items-center gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                  <span className="flex-1">Vendor</span>
+                  <span className="w-32 text-right">Daily limit (USD)</span>
+                  <span className="w-9" aria-hidden />
+                </div>
+              )}
+              {vendorLimitRows.map((row, idx) => {
+                const current = row.vendor.trim().toLowerCase();
+                const usedByOthers = new Set(
+                  vendorLimitRows
+                    .filter((_, i) => i !== idx)
+                    .map((r) => r.vendor.trim().toLowerCase())
+                    .filter(Boolean),
+                );
+                const isStale =
+                  current.length > 0 && !approvedVendorList.includes(current);
+                return (
+                  <div key={idx} className="flex items-center gap-2">
+                    <select
+                      value={current}
+                      onChange={(e) =>
+                        updateVendorLimitRow(idx, { vendor: e.target.value })
+                      }
+                      className={`${inputClass} flex-1 font-mono text-xs`}
+                    >
+                      <option value="">— Select vendor —</option>
+                      {approvedVendorList.map((v) => {
+                        const taken = usedByOthers.has(v);
+                        return (
+                          <option key={v} value={v} disabled={taken}>
+                            {v}
+                            {taken ? " (already used)" : ""}
+                          </option>
+                        );
+                      })}
+                      {isStale && (
+                        <option value={current}>
+                          {current} (not in approved list)
+                        </option>
+                      )}
+                    </select>
+                    <div className="relative w-32">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--muted)]">
+                        $
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={row.limit}
+                        onChange={(e) =>
+                          updateVendorLimitRow(idx, { limit: e.target.value })
+                        }
+                        className={`${inputClass} pl-6 text-right`}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeVendorLimitRow(idx)}
+                      aria-label="Remove vendor limit"
+                      className="rounded-md border border-[var(--border)] px-2.5 py-2 text-xs text-[var(--muted)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
               <button
                 type="button"
-                onClick={() => removeVendorLimitRow(idx)}
-                aria-label="Remove vendor limit"
-                className="rounded-md border border-[var(--border)] px-2.5 py-2 text-xs text-[var(--muted)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+                onClick={addVendorLimitRow}
+                disabled={!hasApproved}
+                className="self-start rounded-md border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-black/[.04] disabled:opacity-50 dark:hover:bg-white/[.04]"
               >
-                ✕
+                + Add vendor limit
               </button>
             </div>
-          ))}
-          <button
-            type="button"
-            onClick={addVendorLimitRow}
-            className="self-start rounded-md border border-[var(--border)] px-3 py-1.5 text-xs hover:bg-black/[.04] dark:hover:bg-white/[.04]"
-          >
-            + Add vendor limit
-          </button>
-        </div>
+          );
+        })()}
       </Field>
 
       <Field label="Expires at" hint="After this time the credential will no longer be valid.">
