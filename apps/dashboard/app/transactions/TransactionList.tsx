@@ -64,6 +64,17 @@ export function TransactionList({
   const [error, setError] = useState<string | null>(null);
   const prevIdsRef = useRef<Set<string>>(new Set());
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
+  const [expandedReasonIds, setExpandedReasonIds] = useState<Set<string>>(
+    new Set(),
+  );
+  function toggleReason(id: string) {
+    setExpandedReasonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -226,11 +237,27 @@ export function TransactionList({
                         {statusLabel[row.status]}
                       </span>
                     </td>
-                    <td
-                      className="max-w-md truncate px-4 py-3 text-xs text-[var(--muted)]"
-                      title={row.reason ?? ""}
-                    >
-                      {row.reason ?? "—"}
+                    <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                      {row.reason ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleReason(row.id)}
+                          title={
+                            expandedReasonIds.has(row.id)
+                              ? "Click to collapse"
+                              : row.reason
+                          }
+                          className={`block w-full max-w-md cursor-pointer text-left ${
+                            expandedReasonIds.has(row.id)
+                              ? "whitespace-normal break-words"
+                              : "truncate"
+                          }`}
+                        >
+                          {row.reason}
+                        </button>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                   </tr>
                 );

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { splitVendors } from "@/lib/vendors";
 import { readVendorLimits } from "@/lib/vendorLimits";
 import { CredentialField } from "./CredentialField";
+import { AgentActions } from "./AgentActions";
 import { TransactionList } from "@/app/transactions/TransactionList";
 
 export const dynamic = "force-dynamic";
@@ -67,15 +68,18 @@ export default async function AgentDetailPage({
           <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{agent.name}</h1>
           <p className="mt-1 break-all text-xs text-[var(--muted)]">{agent.id}</p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-            expired
-              ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
-              : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-          }`}
-        >
-          {expired ? "Expired" : "Active"}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-3">
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              expired
+                ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+            }`}
+          >
+            {expired ? "Expired" : "Active"}
+          </span>
+          <AgentActions agentId={agent.id} expired={expired} />
+        </div>
       </div>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">

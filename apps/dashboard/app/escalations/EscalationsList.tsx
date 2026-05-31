@@ -122,7 +122,7 @@ export function EscalationsList() {
       <section className="flex flex-col gap-3">
         <header className="flex items-center justify-between">
           <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
-            Pending {pending.length > 0 && `(${pending.length})`}
+            Pending ({pending.length})
           </h2>
           <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
             <span className="relative inline-flex h-2 w-2">

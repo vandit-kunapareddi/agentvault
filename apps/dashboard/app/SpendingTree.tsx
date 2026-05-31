@@ -157,7 +157,9 @@ function AgentNode({ data }: NodeProps<Node<TreeNodeData>>) {
         </span>
       </div>
       <div className="mt-2 text-xs text-[var(--muted)]">
-        ${data.todayApprovedSpend.toFixed(2)} of ${data.dailyCap.toFixed(2)} today
+        {data.todayApprovedSpend === 0
+          ? `No spend today · $${data.dailyCap.toFixed(2)} cap`
+          : `$${data.todayApprovedSpend.toFixed(2)} of $${data.dailyCap.toFixed(2)} today`}
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/[.06] dark:bg-white/[.08]">
         <div
