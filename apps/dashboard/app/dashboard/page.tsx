@@ -9,6 +9,8 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-8">
       <Kpis />
 
+      <HomeTabs />
+
       <section className="flex flex-col gap-3">
         <header>
           <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">
@@ -20,8 +22,6 @@ export default function DashboardPage() {
         </header>
         <Insights />
       </section>
-
-      <HomeTabs />
     </div>
   );
 }
