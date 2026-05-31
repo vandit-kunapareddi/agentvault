@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface SummaryResponse {
   pendingEscalations: number;
@@ -81,6 +82,7 @@ export function HeaderNav() {
       >
         Register Agent
       </Link>
+      <ThemeToggle />
     </nav>
   );
 }

@@ -1,11 +1,24 @@
 @import "tailwindcss";
 
+/* Switch Tailwind's `dark:` variant from the default `prefers-color-scheme`
+   media query over to a class on <html>, so a JS toggle can override the
+   OS preference. The init script in layout.tsx sets this class before
+   first paint to avoid a flash of the wrong theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #0a0a0a;
   --muted: #64748b;
   --border: #e2e8f0;
   --accent: #6366f1;
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #f8fafc;
+  --muted: #94a3b8;
+  --border: #1f2937;
 }
 
 @theme inline {
@@ -16,15 +29,6 @@
   --color-accent: var(--accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #f8fafc;
-    --muted: #94a3b8;
-    --border: #1f2937;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -33,28 +37,26 @@ body {
 }
 
 /* React Flow controls — match the dashboard theme tokens so the +/- and
-   fit-view buttons stay readable in both light and dark mode. React Flow's
-   own stylesheet is bundled after this one, so !important is required for
-   the same-specificity rules to win on cascade. */
+   fit-view buttons stay readable in both light and dark mode. */
 .react-flow__controls {
-  background: var(--background) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08) !important;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   overflow: hidden;
 }
 .react-flow__controls-button {
-  background: var(--background) !important;
-  color: var(--foreground) !important;
-  border: none !important;
-  border-bottom: 1px solid var(--border) !important;
+  background: var(--background);
+  color: var(--foreground);
+  border: none;
+  border-bottom: 1px solid var(--border);
 }
 .react-flow__controls-button:last-child {
-  border-bottom: none !important;
+  border-bottom: none;
 }
 .react-flow__controls-button:hover {
-  background: color-mix(in srgb, var(--foreground) 8%, var(--background)) !important;
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
 }
 .react-flow__controls-button svg {
-  fill: currentColor !important;
+  fill: currentColor;
 }

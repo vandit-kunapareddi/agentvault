@@ -59,6 +59,7 @@ export function TransactionList({
   showAgentColumn?: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
   const [rows, setRows] = useState<TransactionRow[] | null>(null);
   const [counts, setCounts] = useState<TransactionCounts | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +128,15 @@ export function TransactionList({
     };
   }, [agentId, filter, limit]);
 
+  const q = query.trim().toLowerCase();
+  const visibleRows =
+    rows && q.length > 0
+      ? rows.filter((r) => {
+          const hay = `${r.agentName} ${r.vendor} ${r.reason ?? ""}`.toLowerCase();
+          return hay.includes(q);
+        })
+      : rows;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -161,6 +171,27 @@ export function TransactionList({
         </div>
       </div>
 
+      <div className="relative">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by agent, vendor, or reason text…"
+          className="w-full rounded-md border border-[var(--border)] bg-transparent px-3 py-2 pr-20 text-sm outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+          aria-label="Search transactions"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-0.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)]"
+            aria-label="Clear search"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {error && (
         <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           {error}
@@ -177,6 +208,10 @@ export function TransactionList({
             ? "No transactions yet. Register an agent and run your first payment to see it here."
             : `No ${FILTERS.find((f) => f.value === filter)?.label.toLowerCase() ?? filter} transactions yet.`}
         </div>
+      ) : visibleRows !== null && visibleRows.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-[var(--border)] p-10 text-center text-sm text-[var(--muted)]">
+          No transactions match &quot;{query}&quot;.
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
           <table className="w-full min-w-[760px] text-sm">
@@ -192,7 +227,7 @@ export function TransactionList({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => {
+              {(visibleRows ?? []).map((row) => {
                 const highlighted = highlightIds.has(row.id);
                 return (
                   <tr
