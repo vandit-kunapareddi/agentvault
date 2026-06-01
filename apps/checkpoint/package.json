@@ -11,10 +11,14 @@
     "@agentvault/trust": "*",
     "@agentvault/types": "*",
     "@prisma/client": "^6.0.0",
+    "@x402/axios": "^2.14.0",
+    "@x402/evm": "^2.14.0",
+    "axios": "^1.7.0",
     "dotenv": "^16.4.0",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "viem": "^2.52.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

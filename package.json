@@ -16,7 +16,8 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "seed": "tsx scripts/seed.ts",
-    "demo:fire": "tsx scripts/demo-fire.ts"
+    "demo:fire": "tsx scripts/demo-fire.ts",
+    "wallet:bootstrap": "tsx scripts/wallet-bootstrap.ts"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

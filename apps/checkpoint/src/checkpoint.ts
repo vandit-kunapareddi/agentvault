@@ -81,7 +81,19 @@ async function finalizeApproved(args: FinalizeArgs): Promise<CheckpointResponse>
     if (err instanceof UnsupportedProtocolError) {
       return respond("blocked", { protocol, trustTier, reason: err.message });
     }
-    throw err;
+    // Any other settlement failure (e.g. real x402 on-chain or vendor error)
+    // surfaces as a blocked transaction so the dashboard shows the reason.
+    const reason =
+      err instanceof Error ? err.message : "Settlement failed";
+    if (transactionId) {
+      await prisma.transaction.update({
+        where: { id: transactionId },
+        data: { status: "blocked", reason },
+      });
+    } else {
+      await logTransaction(agentId, vendor, amount, "blocked", protocol, trustTier, reason);
+    }
+    return respond("blocked", { protocol, trustTier, reason });
   }
 
   const status: CheckpointStatus = receipt.settled ? "approved" : "recognized";
