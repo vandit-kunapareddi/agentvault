@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const GITHUB_URL = "https://github.com/vanditkunapareddi-jpg/agentvault";
+const GITHUB_URL = "https://github.com/vandit-kunapareddi/agentvault";
 
 const STEPS = [
   {
@@ -47,7 +47,7 @@ const FEATURES = [
   },
 ];
 
-const QUICKSTART = `git clone https://github.com/vanditkunapareddi-jpg/agentvault
+const QUICKSTART = `git clone https://github.com/vandit-kunapareddi/agentvault
 cd agentvault
 npm install
 docker compose up -d                   # local Postgres
@@ -102,9 +102,17 @@ export default function LandingPage() {
           repo and run your own checkpoint, dashboard, and Postgres. The
           dashboard linked above is a public demo of one self-hosted instance.
           The SDK is a workspace package inside the monorepo; it is{" "}
-          <strong>not yet published to npm</strong>. See the README for
-          exactly what works end-to-end today versus what is still mocked or
-          stubbed.
+          <strong>not yet published to npm</strong>. See{" "}
+          <a
+            href={`${GITHUB_URL}#readme`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[var(--foreground)]"
+          >
+            the README
+          </a>{" "}
+          for exactly what works end-to-end today versus what is still mocked
+          or stubbed.
         </p>
       </section>
 
@@ -228,7 +236,7 @@ export default function LandingPage() {
           rel="noopener noreferrer"
           className="hover:text-[var(--foreground)]"
         >
-          github.com/vanditkunapareddi-jpg/agentvault
+          github.com/vandit-kunapareddi/agentvault
         </a>
       </footer>
     </div>

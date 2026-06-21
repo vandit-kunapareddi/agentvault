@@ -111,7 +111,7 @@ You'll need:
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/vanditkunapareddi-jpg/agentvault
+git clone https://github.com/vandit-kunapareddi/agentvault
 cd agentvault
 npm install
 ```
@@ -303,7 +303,7 @@ agentvault/
 Contributions welcome — especially on the gaps listed in [What works today, and what doesn't](#what-works-today-and-what-doesnt).
 
 ```bash
-git clone https://github.com/vanditkunapareddi-jpg/agentvault
+git clone https://github.com/vandit-kunapareddi/agentvault
 cd agentvault
 npm install
 docker compose up -d
