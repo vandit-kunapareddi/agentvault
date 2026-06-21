@@ -238,9 +238,24 @@ if (result.status === "approved") {
 
 ---
 
-## Pluggable trust
+## Extending AgentVault
 
-Trust verification is a vendor-neutral interface:
+Two extension points keep the rest of the checkpoint untouched.
+
+**Protocol handlers** — add a new agentic payment protocol (e.g. AP2, TAP, Lightning) or replace a built-in mock with a real implementation. The router is a string-keyed registry; built-in handlers self-register at module load, external code calls `registerHandler("ap2", myHandler)` and the checkpoint routes to it without any pipeline changes.
+
+```ts
+import type { ProtocolHandler } from "./router.js";
+import { registerHandler } from "./router.js";
+
+const lightningHandler: ProtocolHandler = async ({ vendor, amount, endpoint }) => {
+  // … execute the payment, return a PaymentReceipt
+};
+
+registerHandler("bitcoin-lightning", lightningHandler);
+```
+
+**Trust providers** — swap `SimpleTrustProvider` for a custom one (on-chain reputation, behavioural model, in-house service) by implementing the small `TrustProvider` interface and changing one line in [`apps/checkpoint/src/trust.ts`](./apps/checkpoint/src/trust.ts).
 
 ```ts
 interface TrustProvider {
@@ -248,7 +263,7 @@ interface TrustProvider {
 }
 ```
 
-AgentVault ships with `SimpleTrustProvider`, which scores agents from their registration standing. Any external identity or reputation service (on-chain wallet reputation, CDP, behavioural model, etc.) can implement the same interface and drop in without touching the checkpoint pipeline. The minimum score required to transact is configurable via `MIN_TRUST_SCORE`.
+Full guide with worked examples, error semantics, and gotchas: **[docs/EXTENDING.md](./docs/EXTENDING.md)**.
 
 ---
 
