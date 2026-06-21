@@ -33,8 +33,8 @@ The dashboard lives at `http://localhost:3000`, the checkpoint at `http://localh
 
 ```bash
 npm test                # Vitest unit tests
-npm run typecheck       # tsc --noEmit on checkpoint + dashboard
-npm run build:dashboard # full Next.js production build (catches things dev mode doesn't)
+npm run typecheck       # tsc --noEmit on the checkpoint
+npm run build:dashboard # full Next.js production build — also typechecks the dashboard (including per-route generated types that standalone tsc can't see for newly-added routes)
 ```
 
 CI runs all three on every PR; please run them locally first.

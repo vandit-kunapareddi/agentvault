@@ -29,11 +29,14 @@ jobs:
       - name: Generate Prisma client
         run: npm run db:generate
 
-      - name: Typecheck (checkpoint + dashboard)
+      - name: Typecheck checkpoint
         run: npm run typecheck
 
       - name: Tests
         run: npm test
 
       - name: Build dashboard
+        # `next build` runs its own typecheck against the dashboard, including
+        # the per-route generated types that a standalone tsc would not see
+        # for newly-added routes.
         run: npm run build:dashboard

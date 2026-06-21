@@ -1,6 +1,12 @@
 import type { EscalationDecision } from "@agentvault/types";
 import { prisma } from "./db.js";
 import { sendEscalationNotification } from "./slack.js";
+import {
+  emitEscalationCreated,
+  emitEscalationResolved,
+  emitEscalationTimedOut,
+  emitTransactionEvent,
+} from "./webhooks.js";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 
@@ -34,6 +40,7 @@ export async function holdAndAwait(args: HoldArgs): Promise<HoldResult> {
   const escalationId = escalation.id;
 
   const timeoutMs = getTimeoutMs();
+  void emitEscalationCreated(escalationId, timeoutMs);
   const notified = await sendEscalationNotification({
     escalationId,
     agentName: args.agentName,
@@ -107,6 +114,14 @@ export async function resolveEscalation(
     }),
   ]);
 
+  void emitEscalationResolved(escalationId, decision, resolvedBy);
+  // The "approved" path will emit transaction.{approved|recognized|blocked}
+  // later from finalizeApproved, depending on whether settlement succeeds.
+  // The "blocked" path stops here, so emit transaction.blocked now.
+  if (decision === "blocked") {
+    void emitTransactionEvent(existing.transactionId, "blocked");
+  }
+
   const settle = pending.get(escalationId);
   if (settle) settle(decision);
 
@@ -133,4 +148,6 @@ async function persistTimeout(escalationId: string): Promise<void> {
       },
     }),
   ]);
+  void emitEscalationTimedOut(escalationId);
+  void emitTransactionEvent(existing.transactionId, "blocked");
 }

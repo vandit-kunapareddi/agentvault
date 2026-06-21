@@ -21,7 +21,7 @@
     "wallet:bootstrap": "tsx scripts/wallet-bootstrap.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit -p apps/checkpoint/tsconfig.json && tsc --noEmit -p apps/dashboard/tsconfig.json"
+    "typecheck": "tsc --noEmit -p apps/checkpoint/tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^20",

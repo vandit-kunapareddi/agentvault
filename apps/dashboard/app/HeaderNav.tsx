@@ -13,6 +13,7 @@ const LINKS = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Transactions", href: "/transactions" },
   { label: "Escalations", href: "/escalations", badge: "pendingEscalations" as const },
+  { label: "Webhooks", href: "/webhooks" },
 ];
 
 function isActive(pathname: string, href: string): boolean {

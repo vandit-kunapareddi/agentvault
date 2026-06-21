@@ -267,6 +267,8 @@ Full guide with worked examples, error semantics, and gotchas: **[docs/EXTENDING
 
 Two runnable reference implementations live in [`examples/`](./examples/) — a custom [`TrustProvider`](./examples/custom-trust-provider/) and a custom [protocol handler](./examples/custom-protocol-handler/). Both are workspace packages with their own unit tests, so they can't silently drift from the interfaces they document.
 
+**Webhooks** — subscribe an external system to checkpoint events (`transaction.approved`, `transaction.blocked`, escalation lifecycle, etc.). Each delivery is HMAC-signed; subscribers verify with the same pattern as Slack. Manage subscriptions from the dashboard's **Webhooks** page. Full event catalog + signature verification example: **[docs/WEBHOOKS.md](./docs/WEBHOOKS.md)**.
+
 ---
 
 ## Configuration

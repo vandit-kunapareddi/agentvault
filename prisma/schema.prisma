@@ -52,3 +52,18 @@ model Escalation {
   resolvedBy    String?
   createdAt     DateTime    @default(now())
 }
+
+model Webhook {
+  id                 String    @id @default(cuid())
+  url                String
+  secret             String
+  description        String?
+  // Subset of event types to deliver. Null = deliver all events.
+  eventFilter        Json?
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  // Last-attempt diagnostics, updated by the dispatcher.
+  lastDeliveryAt     DateTime?
+  lastDeliveryStatus Int?
+  lastDeliveryError  String?
+}

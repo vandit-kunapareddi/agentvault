@@ -219,7 +219,9 @@ That's it. The checkpoint pipeline doesn't care which implementation is behind t
 
 ## Webhook / event API
 
-Not built yet — this is the next item in Phase 2 of the roadmap. If you need to react to checkpoint decisions externally today, your option is to poll `/api/transactions` or `/api/escalations`.
+To react to checkpoint decisions externally (Datadog, custom dashboards, audit pipelines, etc.), register a webhook from the dashboard's **Webhooks** page or the `/api/webhooks` endpoints. Every transaction/escalation state transition fires an HMAC-signed POST to your URL.
+
+See **[docs/WEBHOOKS.md](./WEBHOOKS.md)** for the event catalog, signature verification example, retry semantics, and management API.
 
 ---
 

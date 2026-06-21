@@ -20,6 +20,7 @@ import {
   getEscalationRateLimit,
   hasUsedVendorBefore,
 } from "./heuristics.js";
+import { emitTransactionEvent } from "./webhooks.js";
 
 const NEAR_CAP_THRESHOLD = 0.9;
 
@@ -37,6 +38,11 @@ async function logTransaction(
     const row = await prisma.transaction.create({
       data: { agentId, vendor, amount, status, protocol, trustTier, reason },
     });
+    // Terminal-state transactions fire a webhook event. "escalated" is
+    // intermediate — the escalation flow emits escalation.created instead.
+    if (status === "approved" || status === "blocked" || status === "recognized") {
+      void emitTransactionEvent(row.id, status);
+    }
     return row.id;
   } catch (err) {
     console.error("[checkpoint] failed to log transaction", err);
@@ -90,6 +96,7 @@ async function finalizeApproved(args: FinalizeArgs): Promise<CheckpointResponse>
         where: { id: transactionId },
         data: { status: "blocked", reason },
       });
+      void emitTransactionEvent(transactionId, "blocked");
     } else {
       await logTransaction(agentId, vendor, amount, "blocked", protocol, trustTier, reason);
     }
@@ -110,6 +117,9 @@ async function finalizeApproved(args: FinalizeArgs): Promise<CheckpointResponse>
         data: { status },
       });
     }
+    // Emit even when no DB update was needed — subscribers still want to
+    // know the final status of a previously-escalated payment.
+    void emitTransactionEvent(transactionId, status);
   } else {
     await logTransaction(agentId, vendor, amount, status, protocol, trustTier, reason);
   }
