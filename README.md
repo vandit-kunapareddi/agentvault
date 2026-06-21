@@ -22,7 +22,7 @@ Being honest about the current state so you know what you're getting:
 | `MPP` protocol handler | **Basic one-shot only.** Sessions, streaming micropayments, subscriptions, and reconciliation are not implemented |
 | `ACP` protocol handler | **Detected and logged** with `settled: false` / status `recognized`. Full checkout execution (Shared Payment Token, cart, fulfillment) is not implemented |
 | `TrustProvider` interface + `SimpleTrustProvider` | **Works** as the default. The interface is vendor-neutral, so external providers can be added behind it without touching the pipeline |
-| `@vandit-kunapareddi/agentvault-sdk` on npm | **Not yet published.** It's a workspace package inside this monorepo. Today, to use it you self-host this repo |
+| `@vanditk2/agentvault-sdk` on npm | **Not yet published.** It's a workspace package inside this monorepo. Today, to use it you self-host this repo |
 | Hosted multi-tenant SaaS | **Not built.** Each user runs their own deployment with their own JWT secret and wallet |
 
 If any of those gaps are blockers for you, please open an issue — they're all on the roadmap.
@@ -210,7 +210,7 @@ Per-vendor `vendorLimits` are applied **on top of** the global `dailyCap`. A pay
 > **The SDK is not yet published to npm.** Today, to use it you either self-host this whole repo (the SDK lives at `packages/sdk` as a workspace package) or vendor that directory into your own project. Publishing is on the [Roadmap](#roadmap).
 
 ```ts
-import { AgentVault } from "@vandit-kunapareddi/agentvault-sdk";
+import { AgentVault } from "@vanditk2/agentvault-sdk";
 
 const vault = new AgentVault({
   credential: process.env.AGENT_CREDENTIAL!, // the signed JWT issued by your dashboard
@@ -273,7 +273,7 @@ agentvault/
 │   ├── dashboard/          # Next.js — registration, spending tree, live log, escalation queue
 │   └── checkpoint/         # Express — the control plane (decision pipeline + protocol handlers)
 ├── packages/
-│   ├── sdk/                # @vandit-kunapareddi/agentvault-sdk — developer-facing client (workspace package)
+│   ├── sdk/                # @vanditk2/agentvault-sdk — developer-facing client (workspace package)
 │   ├── trust/              # @agentvault/trust — TrustProvider + SimpleTrustProvider
 │   └── types/              # shared TypeScript types
 ├── prisma/

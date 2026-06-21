@@ -1,5 +1,5 @@
 {
-  "name": "@vandit-kunapareddi/agentvault-sdk",
+  "name": "@vanditk2/agentvault-sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for AgentVault — the open-source trust and control layer for AI-agent payments.",
   "keywords": [

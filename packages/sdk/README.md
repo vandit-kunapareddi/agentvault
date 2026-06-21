@@ -1,4 +1,4 @@
-# @vandit-kunapareddi/agentvault-sdk
+# @vanditk2/agentvault-sdk
 
 TypeScript client for [AgentVault](https://github.com/vandit-kunapareddi/agentvault) — the open-source trust and control layer for AI-agent payments.
 
@@ -7,7 +7,7 @@ TypeScript client for [AgentVault](https://github.com/vandit-kunapareddi/agentva
 ## Install
 
 ```bash
-npm install @vandit-kunapareddi/agentvault-sdk
+npm install @vanditk2/agentvault-sdk
 ```
 
 Requires Node 20+.
@@ -15,7 +15,7 @@ Requires Node 20+.
 ## Usage
 
 ```ts
-import { AgentVault } from "@vandit-kunapareddi/agentvault-sdk";
+import { AgentVault } from "@vanditk2/agentvault-sdk";
 
 const vault = new AgentVault({
   credential: process.env.AGENT_CREDENTIAL!,   // a signed JWT issued by your AgentVault dashboard
@@ -72,7 +72,7 @@ Generate these from the AgentVault dashboard's "Register agent" form. The checkp
 If you just want to know which protocol an endpoint expects without making a payment:
 
 ```ts
-import { detectProtocol } from "@vandit-kunapareddi/agentvault-sdk";
+import { detectProtocol } from "@vanditk2/agentvault-sdk";
 
 const protocol = await detectProtocol("https://api.someservice.com/data");
 // → "x402" | "mpp" | "acp" | "unknown"
