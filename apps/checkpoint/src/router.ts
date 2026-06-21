@@ -1,16 +1,11 @@
-import type { PaymentReceipt } from "@agentvault/types";
-import type { HandlerArgs } from "./handlers/receipt.js";
+import type { HandlerArgs, PaymentReceipt, ProtocolHandler } from "@agentvault/types";
 import { x402Handler } from "./handlers/x402.js";
 import { mppHandler } from "./handlers/mpp.js";
 import { acpHandler } from "./handlers/acp.js";
 
-/**
- * The contract every protocol handler implements. Takes the payment request
- * details (vendor, amount, optional endpoint) and resolves to a settlement
- * receipt. Throwing surfaces in the checkpoint as a blocked transaction with
- * the error message as the reason.
- */
-export type ProtocolHandler = (args: HandlerArgs) => Promise<PaymentReceipt>;
+// Re-export the public extension contract so callers can import it from a
+// single place. The canonical definition lives in @agentvault/types.
+export type { ProtocolHandler, HandlerArgs };
 
 export class UnsupportedProtocolError extends Error {
   constructor(public readonly protocol: string) {

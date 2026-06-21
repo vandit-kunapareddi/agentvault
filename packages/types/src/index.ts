@@ -1,4 +1,16 @@
-export type Protocol = "x402" | "mpp" | "acp" | "unknown";
+/**
+ * Built-in protocols the checkpoint and SDK know about by name. External
+ * protocol handlers can register themselves with any string — the union
+ * here is just for autocomplete and as documentation of the built-ins.
+ * The `(string & {})` widens the type to accept arbitrary strings without
+ * collapsing the literal autocomplete suggestions.
+ */
+export type Protocol =
+  | "x402"
+  | "mpp"
+  | "acp"
+  | "unknown"
+  | (string & {});
 
 export interface CredentialPayload {
   agentId: string;
@@ -40,6 +52,26 @@ export interface PaymentReceipt {
   settled: boolean;
   timestamp: string;
 }
+
+/**
+ * Arguments passed into a protocol handler by the checkpoint router. The
+ * pipeline has already run trust + budget + vendor checks by the time a
+ * handler is called — the handler's only job is to execute (or simulate)
+ * the payment and return a receipt.
+ */
+export interface HandlerArgs {
+  vendor: string;
+  amount: number;
+  endpoint?: string;
+}
+
+/**
+ * The contract every protocol handler implements. Returning a receipt with
+ * `settled: false` is logged as "recognized" (not approved); throwing is
+ * caught by the checkpoint and surfaced as a blocked transaction with the
+ * error message as the reason.
+ */
+export type ProtocolHandler = (args: HandlerArgs) => Promise<PaymentReceipt>;
 
 export interface CheckpointResponse {
   status: CheckpointStatus;

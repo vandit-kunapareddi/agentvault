@@ -1,5 +1,10 @@
 import type { PaymentReceipt, Protocol } from "@agentvault/types";
 
+// HandlerArgs lives in @agentvault/types so external protocol handlers can
+// import it without depending on the checkpoint's internal layout. Re-exported
+// here for backwards-compatibility with existing internal imports.
+export type { HandlerArgs } from "@agentvault/types";
+
 export function makeReceipt(
   protocol: Protocol,
   vendor: string,
@@ -16,10 +21,4 @@ export function makeReceipt(
     settled,
     timestamp: new Date().toISOString(),
   };
-}
-
-export interface HandlerArgs {
-  vendor: string;
-  amount: number;
-  endpoint?: string;
 }

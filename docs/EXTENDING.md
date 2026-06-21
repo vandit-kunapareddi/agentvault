@@ -225,4 +225,9 @@ Not built yet — this is the next item in Phase 2 of the roadmap. If you need t
 
 ## Reference implementations
 
-We're planning to ship one or two reference repos (a custom `TrustProvider`, a custom protocol handler) as living docs. Until those exist, this file is the source of truth — PRs to improve it very welcome.
+Two runnable examples live in [`examples/`](../examples/). They're regular workspace packages with their own unit tests (covered by `npm test`), so they can't silently drift from the interfaces they document.
+
+- **[examples/custom-trust-provider](../examples/custom-trust-provider/)** — `ReputationServiceProvider`, a `TrustProvider` that scores agents via an external HTTP service. Demonstrates the never-fail-open principle across every error path (network down, non-OK response, malformed body).
+- **[examples/custom-protocol-handler](../examples/custom-protocol-handler/)** — `createLedgerPayHandler`, a `ProtocolHandler` for a fictional `ledger-pay` protocol that records payments to an external ledger service. Demonstrates all three handler return shapes (approved / recognized / blocked).
+
+Each example has its own README with the contract, wiring instructions, and a worked test invocation.

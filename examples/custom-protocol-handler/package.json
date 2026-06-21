@@ -1,0 +1,12 @@
+{
+  "name": "@agentvault-examples/protocol-handler",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reference implementation: a custom ProtocolHandler ('ledger-pay') that records payments to an external ledger service. Demonstrates the three handler return shapes (approved / recognized / blocked).",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@agentvault/types": "*"
+  }
+}

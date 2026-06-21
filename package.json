@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
     "dev": "concurrently -n checkpoint,dashboard -c blue,magenta \"npm:dev:checkpoint\" \"npm:dev:dashboard\"",

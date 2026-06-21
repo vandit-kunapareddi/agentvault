@@ -265,6 +265,8 @@ interface TrustProvider {
 
 Full guide with worked examples, error semantics, and gotchas: **[docs/EXTENDING.md](./docs/EXTENDING.md)**.
 
+Two runnable reference implementations live in [`examples/`](./examples/) — a custom [`TrustProvider`](./examples/custom-trust-provider/) and a custom [protocol handler](./examples/custom-protocol-handler/). Both are workspace packages with their own unit tests, so they can't silently drift from the interfaces they document.
+
 ---
 
 ## Configuration
