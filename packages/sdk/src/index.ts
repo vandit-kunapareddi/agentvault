@@ -1,4 +1,12 @@
-import type { PaymentResult, Protocol } from "@agentvault/types";
+import type { PaymentResult, Protocol } from "./types.js";
+
+export type {
+  Protocol,
+  CheckpointStatus,
+  PaymentReceipt,
+  CheckpointResponse,
+  PaymentResult,
+} from "./types.js";
 
 const DEFAULT_CHECKPOINT_URL = "http://localhost:4000";
 
