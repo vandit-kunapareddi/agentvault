@@ -5,63 +5,56 @@ const GITHUB_URL = "https://github.com/vanditkunapareddi-jpg/agentvault";
 const STEPS = [
   {
     n: 1,
-    title: "Drop in the SDK",
-    body: "Your agent calls vault.pay({endpoint, maxAmount}). Nothing else in your agent's code has to change.",
+    title: "Self-host the checkpoint",
+    body: "Clone the repo and deploy your own checkpoint, dashboard, and Postgres. Generate a JWT secret and (optionally) a wallet for real on-chain settlement.",
   },
   {
     n: 2,
-    title: "AgentVault routes it",
-    body: "The checkpoint detects which protocol the endpoint expects, verifies the agent's trust, enforces global and per-vendor budgets, and pauses anything unusual for a human to approve.",
+    title: "Register an agent",
+    body: "From your dashboard, register an agent with its spending rules — daily cap, per-tx limit, approved vendors, per-vendor limits. You get back a signed JWT credential to hand to the agent.",
   },
   {
     n: 3,
-    title: "Payment settles",
-    body: "Routes through the right protocol — x402, MPP, or ACP today; new protocols plug in behind the same interface. Every decision lands in the live dashboard in real time.",
+    title: "The agent calls vault.pay()",
+    body: "Your agent calls vault.pay({endpoint, maxAmount}). The checkpoint verifies the credential, runs the trust + budget pipeline, escalates anything unusual, and routes to the right protocol handler.",
   },
 ];
 
 const FEATURES = [
   {
     title: "Universal protocol router",
-    body: "One SDK, any agentic payment protocol. New protocols are added behind a single interface — your agent code never changes.",
+    body: "One SDK shape, any agentic payment protocol. Today: x402 with real Base Sepolia settlement when you supply a wallet. MPP is a basic one-shot flow. ACP is recognised and logged but not yet executed.",
   },
   {
-    title: "Behavioural trust scoring",
-    body: "Every payment is scored before it goes through. Every block, approval, and escalation feeds the platform's own trust dataset.",
+    title: "Pluggable trust layer",
+    body: "Vendor-neutral TrustProvider interface. SimpleTrustProvider ships as the default; external identity, reputation, or behavioural providers can be added behind the same interface without touching the pipeline.",
   },
   {
     title: "Budget enforcement",
-    body: "Daily caps, per-transaction limits, and per-vendor daily limits — enforced by an external checkpoint, not the agent itself.",
+    body: "Daily caps, per-transaction limits, and per-vendor daily limits — all enforced by an external checkpoint, not inside the agent's own code where a compromised agent could bypass them.",
   },
   {
     title: "Cross-agent spending tree",
-    body: "When agents hire sub-agents, every payment in the chain rolls up into one live view with full attribution.",
+    body: "When agents hire sub-agents, every payment in the chain rolls up into one live view with full attribution and live health indicators.",
   },
   {
     title: "Human-in-the-loop escalation",
-    body: "Unusual payments pause, fire a Slack notification, and wait for an Approve / Block decision. No response in 60s → auto-block. Never fails open.",
+    body: "Unusual payments pause, fire a Slack notification (with HMAC-verified Approve/Block buttons), and wait for a decision. No response in 60s → auto-block. Never fails open.",
   },
   {
     title: "Live dashboard + suggestions",
-    body: "Spending tree, transaction log, forecasts, and actionable suggestions from block and escalation patterns — all updating as payments happen.",
+    body: "Spending tree, transaction log, forecasts, and actionable suggestions surfaced from block and escalation patterns — all updating as payments happen.",
   },
 ];
 
-const CODE_EXAMPLE = `import { AgentVault } from "@agentvault/sdk";
-
-const vault = new AgentVault({
-  credential: process.env.AGENT_CREDENTIAL!,
-  checkpointUrl: process.env.AGENTVAULT_CHECKPOINT_URL,
-});
-
-const result = await vault.pay({
-  endpoint: "https://api.exa.ai/search",
-  maxAmount: 0.05,
-});
-
-if (result.status === "approved") {
-  // use the receipt and call the vendor
-}`;
+const QUICKSTART = `git clone https://github.com/vanditkunapareddi-jpg/agentvault
+cd agentvault
+npm install
+docker compose up -d                   # local Postgres
+cp .env.example .env                    # then set JWT_SECRET
+npm run db:migrate:deploy
+npm run seed                            # optional — demo agents + transactions
+npm run dev                             # checkpoint :4000, dashboard :3000`;
 
 export default function LandingPage() {
   return (
@@ -69,32 +62,50 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 pt-6 text-center sm:pt-12">
         <span className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]">
-          One SDK. Any protocol. Full control.
+          Open source · self-host today
         </span>
         <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          The universal payment and control layer for AI agents.
+          A trust and control layer for AI-agent payments.
         </h1>
         <p className="max-w-2xl text-base text-[var(--muted)] sm:text-lg">
-          One SDK that lets your agent pay across any agentic payment protocol,
-          with trust verification, budget enforcement, per-vendor limits,
-          cross-agent spend visibility, and human escalation built in.
+          An open-source checkpoint that sits between your AI agents and any
+          agentic payment protocol. Verifies credentials, enforces budgets,
+          gives you cross-agent visibility, and pauses anything unusual for a
+          human to approve.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            Open dashboard
-          </Link>
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md border border-[var(--border)] px-5 py-2.5 text-sm font-medium hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+            className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
           >
             View on GitHub →
           </a>
+          <Link
+            href="/dashboard"
+            className="rounded-md border border-[var(--border)] px-5 py-2.5 text-sm font-medium hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+          >
+            Browse the demo dashboard
+          </Link>
         </div>
+      </section>
+
+      {/* Honest status callout */}
+      <section className="rounded-lg border border-[var(--border)] bg-black/[.02] p-5 dark:bg-white/[.03]">
+        <h2 className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+          Project status
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed">
+          AgentVault is open source and <strong>self-host today</strong> —
+          there is no hosted SaaS yet. To use it in production you clone the
+          repo and run your own checkpoint, dashboard, and Postgres. The
+          dashboard linked above is a public demo of one self-hosted instance.
+          The SDK is a workspace package inside the monorepo; it is{" "}
+          <strong>not yet published to npm</strong>. See the README for
+          exactly what works end-to-end today versus what is still mocked or
+          stubbed.
+        </p>
       </section>
 
       {/* Why */}
@@ -104,18 +115,17 @@ export default function LandingPage() {
         </h2>
         <div className="grid gap-6 sm:grid-cols-2">
           <p className="text-base leading-relaxed">
-            In the last twelve months, multiple agentic payment protocols have
-            shipped — x402, MPP, ACP, and more on the way. Each is real,
-            production-bound, and solves a slightly different slice of the
-            problem.
+            Multiple agentic payment protocols have shipped in the last twelve
+            months — x402, MPP, ACP, and more on the way. Each is real and
+            solves a different slice of how a payment moves.
           </p>
           <p className="text-base leading-relaxed text-[var(--muted)]">
-            But every developer building an AI agent now has to integrate them
-            separately, manage the differences, and figure out for themselves
-            whether an agent should be trusted to make any given payment at all.
-            AgentVault is the layer above that abstracts the protocols and adds
-            the governance — so you integrate once and get trust, budgets, and
-            human oversight for free.
+            None of them answer the question a developer actually cares about:
+            should this agent be trusted to make this payment, is it within
+            budget, what is my whole agent ecosystem spending, and can I step
+            in before something unusual goes through? AgentVault is the layer
+            above that adds the governance — across protocols, through one
+            interface.
           </p>
         </div>
       </section>
@@ -159,31 +169,51 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Get started */}
+      {/* Quickstart */}
       <section className="flex flex-col gap-4">
         <h2 className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
-          Get started
+          Self-host quickstart
         </h2>
         <div className="rounded-lg border border-[var(--border)] p-6">
           <p className="text-sm">
-            Spin up the live dashboard, register your first agent, mint a
-            spending credential, and watch payments flow through.
+            Local Postgres, both apps running in dev mode, optional demo data.
+            About five minutes from clone to a working dashboard at{" "}
+            <code className="rounded bg-black/[.05] px-1 py-0.5 text-xs dark:bg-white/[.08]">
+              http://localhost:3000
+            </code>
+            .
           </p>
           <pre className="mt-3 overflow-x-auto rounded-md bg-black/[.03] p-4 font-mono text-xs dark:bg-white/[.03]">
-            {CODE_EXAMPLE}
+            {QUICKSTART}
           </pre>
+          <p className="mt-3 text-xs text-[var(--muted)]">
+            Full instructions for deploying to Vercel + Railway, enabling
+            real x402 settlement on Base Sepolia, and wiring up Slack
+            escalations are in the{" "}
+            <a
+              href={`${GITHUB_URL}#self-host-quickstart`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[var(--foreground)]"
+            >
+              README
+            </a>
+            .
+          </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href="/agents/new"
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
             >
-              Register your first agent →
-            </Link>
+              View on GitHub →
+            </a>
             <Link
               href="/dashboard"
               className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-black/[.04] dark:hover:bg-white/[.04]"
             >
-              Open dashboard
+              Browse demo dashboard
             </Link>
           </div>
         </div>
@@ -191,7 +221,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="flex flex-col items-center gap-2 pb-8 text-xs text-[var(--muted)]">
-        <p>AgentVault — one SDK, any protocol, full control.</p>
+        <p>AgentVault — open-source trust and control for AI-agent payments.</p>
         <a
           href={GITHUB_URL}
           target="_blank"
