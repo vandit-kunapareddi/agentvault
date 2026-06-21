@@ -22,7 +22,7 @@ Being honest about the current state so you know what you're getting:
 | `MPP` protocol handler | **Basic one-shot only.** Sessions, streaming micropayments, subscriptions, and reconciliation are not implemented |
 | `ACP` protocol handler | **Detected and logged** with `settled: false` / status `recognized`. Full checkout execution (Shared Payment Token, cart, fulfillment) is not implemented |
 | `TrustProvider` interface + `SimpleTrustProvider` | **Works** as the default. The interface is vendor-neutral, so external providers can be added behind it without touching the pipeline |
-| `@vanditk2/agentvault-sdk` on npm | **Not yet published.** It's a workspace package inside this monorepo. Today, to use it you self-host this repo |
+| `@vanditk2/agentvault-sdk` on npm | **Published — v0.1.0.** `npm install @vanditk2/agentvault-sdk` |
 | Hosted multi-tenant SaaS | **Not built.** Each user runs their own deployment with their own JWT secret and wallet |
 
 If any of those gaps are blockers for you, please open an issue — they're all on the roadmap.
@@ -207,7 +207,13 @@ Per-vendor `vendorLimits` are applied **on top of** the global `dailyCap`. A pay
 
 ## SDK usage
 
-> **The SDK is not yet published to npm.** Today, to use it you either self-host this whole repo (the SDK lives at `packages/sdk` as a workspace package) or vendor that directory into your own project. Publishing is on the [Roadmap](#roadmap).
+Install:
+
+```bash
+npm install @vanditk2/agentvault-sdk
+```
+
+The SDK is useless on its own — it talks to an AgentVault checkpoint. Until a hosted version exists, that means self-hosting this repo first (see the quickstart above) and pointing `checkpointUrl` at your deployment.
 
 ```ts
 import { AgentVault } from "@vanditk2/agentvault-sdk";
@@ -322,7 +328,6 @@ For substantial changes (new protocol handler, new trust provider, schema change
 Roughly in priority order:
 
 - **Complete the protocol layer.** Real MPP sessions / streaming / subscriptions. Full ACP checkout execution (Shared Payment Token, cart, fulfillment). AP2 mandate support. TAP integration.
-- **Publish the SDK to npm** so developers don't have to vendor a workspace package to use AgentVault.
 - **Extensibility surface.** Handler registry so external packages can register protocol handlers at runtime. Documented `TrustProvider` interface + reference implementations.
 - **Behavioural trust model.** Once enough real transaction data accumulates, per-agent-type spending signatures and deviation-based escalation, beyond simple rule violations.
 - **Intelligence layer.** Spend forecasting (already present in the dashboard), policy templates (present), total agent cost dashboard (LLM token costs + payment costs unified), payment-failure intelligence.
