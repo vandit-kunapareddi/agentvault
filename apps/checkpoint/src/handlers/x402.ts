@@ -5,7 +5,7 @@ import {
 } from "@x402/axios";
 import { ExactEvmScheme } from "@x402/evm";
 import { privateKeyToAccount } from "viem/accounts";
-import type { PaymentReceipt } from "@agentvault/types";
+import type { PaymentReceipt } from "@vanditk2/agentvault-types";
 import { makeReceipt, type HandlerArgs } from "./receipt.js";
 
 let cachedKey: string | null = null;

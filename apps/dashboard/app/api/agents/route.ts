@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { SimpleTrustProvider } from "@agentvault/trust";
+import { SimpleTrustProvider } from "@vanditk2/agentvault-trust";
 import { prisma } from "@/lib/db";
 import { signCredential } from "@/lib/credential";
 import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";

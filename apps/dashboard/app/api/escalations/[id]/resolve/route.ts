@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { ResolveEscalationRequest } from "@agentvault/types";
+import type { ResolveEscalationRequest } from "@vanditk2/agentvault-types";
 
 const CHECKPOINT_URL =
   process.env.CHECKPOINT_INTERNAL_URL ?? "http://localhost:4000";

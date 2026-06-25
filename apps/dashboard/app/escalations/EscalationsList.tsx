@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { EscalationDecision, EscalationRow } from "@agentvault/types";
+import type { EscalationDecision, EscalationRow } from "@vanditk2/agentvault-types";
 
 function statusPill(status: EscalationRow["status"]): string {
   switch (status) {

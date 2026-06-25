@@ -16,7 +16,7 @@ import type {
   AgentTrustContext,
   GateResult,
   TrustProvider,
-} from "@agentvault/trust";
+} from "@vanditk2/agentvault-trust";
 
 export interface ReputationServiceOptions {
   /** Base URL of the reputation service (e.g. https://reputation.example.com). */

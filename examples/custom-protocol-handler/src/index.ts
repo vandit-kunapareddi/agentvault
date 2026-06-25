@@ -27,7 +27,7 @@ import type {
   HandlerArgs,
   PaymentReceipt,
   ProtocolHandler,
-} from "@agentvault/types";
+} from "@vanditk2/agentvault-types";
 
 export interface LedgerPayHandlerOptions {
   /** Base URL of the ledger service. */

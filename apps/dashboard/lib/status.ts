@@ -1,4 +1,4 @@
-import type { CheckpointStatus, Protocol } from "@agentvault/types";
+import type { CheckpointStatus, Protocol } from "@vanditk2/agentvault-types";
 
 export const statusPill: Record<CheckpointStatus, string> = {
   approved:

@@ -14,7 +14,7 @@ Both keep the rest of the checkpoint pipeline untouched. If you find yourself ne
 The handler registry lives at [`apps/checkpoint/src/router.ts`](../apps/checkpoint/src/router.ts). Each handler implements the `ProtocolHandler` contract:
 
 ```ts
-import type { PaymentReceipt } from "@agentvault/types";
+import type { PaymentReceipt } from "@vanditk2/agentvault-types";
 import type { HandlerArgs } from "./handlers/receipt.js";
 
 export type ProtocolHandler = (args: HandlerArgs) => Promise<PaymentReceipt>;
@@ -59,7 +59,7 @@ Say you want to add support for a hypothetical `bitcoin-lightning` protocol:
 
 ```ts
 // my-bolt-handler.ts
-import type { PaymentReceipt } from "@agentvault/types";
+import type { PaymentReceipt } from "@vanditk2/agentvault-types";
 import type { ProtocolHandler } from "@agentvault/checkpoint/router";  // workspace import
 import { makeReceipt } from "@agentvault/checkpoint/handlers/receipt";
 import { sendLightningPayment } from "./my-lightning-client";
@@ -120,7 +120,7 @@ A handler-registry-style extension on the SDK side is a planned follow-up.
 
 ## Trust providers
 
-The trust gate runs early in the checkpoint pipeline (right after credential verification, before any budget check) and decides whether an agent is even allowed to attempt a payment. The contract lives in `@agentvault/trust`:
+The trust gate runs early in the checkpoint pipeline (right after credential verification, before any budget check) and decides whether an agent is even allowed to attempt a payment. The contract lives in `@vanditk2/agentvault-trust`:
 
 ```ts
 interface TrustProvider {
@@ -153,7 +153,7 @@ import type {
   AgentTrustContext,
   GateResult,
   TrustProvider,
-} from "@agentvault/trust";
+} from "@vanditk2/agentvault-trust";
 
 export class ReputationServiceProvider implements TrustProvider {
   constructor(private readonly serviceUrl: string, private readonly minScore = 70) {}

@@ -8,8 +8,8 @@
     "start": "tsx src/index.ts"
   },
   "dependencies": {
-    "@agentvault/trust": "*",
-    "@agentvault/types": "*",
+    "@vanditk2/agentvault-trust": "*",
+    "@vanditk2/agentvault-types": "*",
     "@prisma/client": "^6.0.0",
     "@x402/axios": "^2.14.0",
     "@x402/evm": "^2.14.0",

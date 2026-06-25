@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import type { Protocol } from "@agentvault/types";
+import type { Protocol } from "@vanditk2/agentvault-types";
 
 export const mockServices = Router();
 

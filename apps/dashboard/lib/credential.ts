@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { CredentialPayload, Protocol } from "@agentvault/types";
+import type { CredentialPayload, Protocol } from "@vanditk2/agentvault-types";
 
 const DEFAULT_SUPPORTED_PROTOCOLS: Protocol[] = ["x402", "mpp", "acp"];
 

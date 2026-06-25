@@ -7,6 +7,6 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
-    "@agentvault/trust": "*"
+    "@vanditk2/agentvault-trust": "*"
   }
 }

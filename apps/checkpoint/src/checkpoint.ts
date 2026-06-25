@@ -4,7 +4,7 @@ import type {
   CheckpointStatus,
   CredentialPayload,
   Protocol,
-} from "@agentvault/types";
+} from "@vanditk2/agentvault-types";
 import { prisma } from "./db.js";
 import { verifyCredential } from "./credential.js";
 import {

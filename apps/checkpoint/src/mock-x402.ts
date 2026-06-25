@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import type { MockPaymentRequest, MockPaymentResponse } from "@agentvault/types";
+import type { MockPaymentRequest, MockPaymentResponse } from "@vanditk2/agentvault-types";
 
 export const mockX402 = Router();
 

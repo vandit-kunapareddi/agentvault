@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { CredentialPayload } from "@agentvault/types";
+import type { CredentialPayload } from "@vanditk2/agentvault-types";
 
 export type VerifyResult =
   | { ok: true; payload: CredentialPayload }

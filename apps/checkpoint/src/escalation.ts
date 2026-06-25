@@ -1,4 +1,4 @@
-import type { EscalationDecision } from "@agentvault/types";
+import type { EscalationDecision } from "@vanditk2/agentvault-types";
 import { prisma } from "./db.js";
 import { sendEscalationNotification } from "./slack.js";
 import {

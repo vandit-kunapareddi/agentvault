@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { Protocol } from "@agentvault/types";
+import type { Protocol } from "@vanditk2/agentvault-types";
 import { prisma } from "./db.js";
 import type {
   WebhookEventPayload,

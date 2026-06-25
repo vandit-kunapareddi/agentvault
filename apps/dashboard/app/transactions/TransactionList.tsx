@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { CheckpointStatus } from "@agentvault/types";
+import type { CheckpointStatus } from "@vanditk2/agentvault-types";
 import { protocolBadge, protocolLabel, statusLabel, statusPill } from "@/lib/status";
 import type { TransactionRow } from "@/lib/transactions";
 

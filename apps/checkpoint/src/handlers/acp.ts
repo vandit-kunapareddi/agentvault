@@ -1,4 +1,4 @@
-import type { PaymentReceipt } from "@agentvault/types";
+import type { PaymentReceipt } from "@vanditk2/agentvault-types";
 import { makeReceipt, type HandlerArgs } from "./receipt.js";
 
 // ACP is recognized and routed, but checkout execution (cart, Shared

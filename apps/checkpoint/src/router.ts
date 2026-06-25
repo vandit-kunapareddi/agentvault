@@ -1,10 +1,10 @@
-import type { HandlerArgs, PaymentReceipt, ProtocolHandler } from "@agentvault/types";
+import type { HandlerArgs, PaymentReceipt, ProtocolHandler } from "@vanditk2/agentvault-types";
 import { x402Handler } from "./handlers/x402.js";
 import { mppHandler } from "./handlers/mpp.js";
 import { acpHandler } from "./handlers/acp.js";
 
 // Re-export the public extension contract so callers can import it from a
-// single place. The canonical definition lives in @agentvault/types.
+// single place. The canonical definition lives in @vanditk2/agentvault-types.
 export type { ProtocolHandler, HandlerArgs };
 
 export class UnsupportedProtocolError extends Error {

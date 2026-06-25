@@ -1,4 +1,4 @@
-import type { Protocol } from "@agentvault/types";
+import type { Protocol } from "@vanditk2/agentvault-types";
 
 /**
  * The full set of events the checkpoint can emit. The taxonomy is

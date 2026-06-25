@@ -1,7 +1,50 @@
 {
-  "name": "@agentvault/trust",
-  "version": "0.0.0",
-  "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts"
+  "name": "@vanditk2/agentvault-trust",
+  "version": "0.1.0",
+  "description": "The TrustProvider interface for AgentVault — plus SimpleTrustProvider as a reference implementation. Write your own provider against this contract.",
+  "keywords": [
+    "agentvault",
+    "agentic-payments",
+    "ai-agents",
+    "trust",
+    "reputation"
+  ],
+  "license": "MIT",
+  "author": "Vandit Kunapareddi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vandit-kunapareddi/agentvault.git",
+    "directory": "packages/trust"
+  },
+  "homepage": "https://github.com/vandit-kunapareddi/agentvault#readme",
+  "bugs": {
+    "url": "https://github.com/vandit-kunapareddi/agentvault/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
 }

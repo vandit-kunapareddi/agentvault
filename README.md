@@ -299,7 +299,7 @@ agentvault/
 │   └── checkpoint/         # Express — the control plane (decision pipeline + protocol handlers)
 ├── packages/
 │   ├── sdk/                # @vanditk2/agentvault-sdk — developer-facing client (workspace package)
-│   ├── trust/              # @agentvault/trust — TrustProvider + SimpleTrustProvider
+│   ├── trust/              # @vanditk2/agentvault-trust — TrustProvider + SimpleTrustProvider
 │   └── types/              # shared TypeScript types
 ├── prisma/
 │   ├── schema.prisma       # Agent / Transaction / Escalation

@@ -1,9 +1,9 @@
-import type { PaymentReceipt, Protocol } from "@agentvault/types";
+import type { PaymentReceipt, Protocol } from "@vanditk2/agentvault-types";
 
-// HandlerArgs lives in @agentvault/types so external protocol handlers can
+// HandlerArgs lives in @vanditk2/agentvault-types so external protocol handlers can
 // import it without depending on the checkpoint's internal layout. Re-exported
 // here for backwards-compatibility with existing internal imports.
-export type { HandlerArgs } from "@agentvault/types";
+export type { HandlerArgs } from "@vanditk2/agentvault-types";
 
 export function makeReceipt(
   protocol: Protocol,

@@ -1,4 +1,4 @@
-import type { PaymentReceipt } from "@agentvault/types";
+import type { PaymentReceipt } from "@vanditk2/agentvault-types";
 import { makeReceipt, type HandlerArgs } from "./receipt.js";
 
 // Stub: routing is real, payment execution is mocked. Returns the same

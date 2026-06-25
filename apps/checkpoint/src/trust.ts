@@ -1,4 +1,4 @@
-import { SimpleTrustProvider, type GateResult, type TrustProvider } from "@agentvault/trust";
+import { SimpleTrustProvider, type GateResult, type TrustProvider } from "@vanditk2/agentvault-trust";
 import { prisma } from "./db.js";
 
 function getMinScore(): number {

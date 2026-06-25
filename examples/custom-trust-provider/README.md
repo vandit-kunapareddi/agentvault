@@ -22,7 +22,7 @@ Swap `SimpleTrustProvider` for this class in [`apps/checkpoint/src/trust.ts`](..
 
 ```ts
 // Before
-import { SimpleTrustProvider } from "@agentvault/trust";
+import { SimpleTrustProvider } from "@vanditk2/agentvault-trust";
 const provider: TrustProvider = new SimpleTrustProvider({ minScore: getMinScore() });
 
 // After

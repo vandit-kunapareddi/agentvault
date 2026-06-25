@@ -7,7 +7,7 @@ import type {
   CheckpointResponse,
   EscalationDecision,
   ResolveEscalationRequest,
-} from "@agentvault/types";
+} from "@vanditk2/agentvault-types";
 import { evaluateCheckpoint } from "./checkpoint.js";
 import { mockX402 } from "./mock-x402.js";
 import { mockServices } from "./mock-services.js";
