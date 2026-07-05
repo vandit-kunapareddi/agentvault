@@ -101,16 +101,35 @@ export default function LandingPage() {
           there is no hosted SaaS yet. To use it in production you clone the
           repo and run your own checkpoint, dashboard, and Postgres. The
           dashboard linked above is a public demo of one self-hosted instance.
-          The TypeScript SDK is{" "}
+          All three AgentVault packages are on npm —{" "}
           <a
             href="https://www.npmjs.com/package/@vanditk2/agentvault-sdk"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-[var(--foreground)]"
           >
-            published as <code>@vanditk2/agentvault-sdk</code>
+            <code>@vanditk2/agentvault-sdk</code>
           </a>{" "}
-          on npm but is useless without a running checkpoint to talk to. See{" "}
+          for agents,{" "}
+          <a
+            href="https://www.npmjs.com/package/@vanditk2/agentvault-types"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[var(--foreground)]"
+          >
+            <code>-types</code>
+          </a>{" "}
+          for shared type contracts, and{" "}
+          <a
+            href="https://www.npmjs.com/package/@vanditk2/agentvault-trust"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[var(--foreground)]"
+          >
+            <code>-trust</code>
+          </a>{" "}
+          for writing your own custom trust provider — but they're all useless
+          without a running checkpoint to talk to. See{" "}
           <a
             href={`${GITHUB_URL}#readme`}
             target="_blank"

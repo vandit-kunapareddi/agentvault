@@ -23,6 +23,8 @@ Being honest about the current state so you know what you're getting:
 | `ACP` protocol handler | **Detected and logged** with `settled: false` / status `recognized`. Full checkout execution (Shared Payment Token, cart, fulfillment) is not implemented |
 | `TrustProvider` interface + `SimpleTrustProvider` | **Works** as the default. The interface is vendor-neutral, so external providers can be added behind it without touching the pipeline |
 | `@vanditk2/agentvault-sdk` on npm | **Published — v0.1.0.** `npm install @vanditk2/agentvault-sdk` |
+| `@vanditk2/agentvault-types` on npm | **Published — v0.1.0.** Shared TypeScript types (Protocol, HandlerArgs, PaymentReceipt, etc.) for external protocol handlers and webhook subscribers |
+| `@vanditk2/agentvault-trust` on npm | **Published — v0.1.0.** `TrustProvider` interface + `SimpleTrustProvider` reference implementation — install to write your own custom provider |
 | Hosted multi-tenant SaaS | **Not built.** Each user runs their own deployment with their own JWT secret and wallet |
 
 If any of those gaps are blockers for you, please open an issue — they're all on the roadmap.
