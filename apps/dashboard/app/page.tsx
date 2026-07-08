@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CheckpointFeed from "./CheckpointFeed";
 
 const GITHUB_URL = "https://github.com/vandit-kunapareddi/agentvault";
 
@@ -88,6 +89,11 @@ export default function LandingPage() {
           >
             Browse the demo dashboard
           </Link>
+        </div>
+
+        {/* Live animation of the checkpoint flagging payments */}
+        <div className="flex w-full justify-center pt-6">
+          <CheckpointFeed />
         </div>
       </section>
 

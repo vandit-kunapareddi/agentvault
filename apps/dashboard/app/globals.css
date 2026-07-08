@@ -36,6 +36,27 @@ body {
     Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Landing hero checkpoint feed — each new row slides in from the top and
+   fades up, so payments look like they're streaming into the checkpoint. */
+@keyframes av-feed-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.av-feed-row {
+  animation: av-feed-in 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .av-feed-row {
+    animation: none;
+  }
+}
+
 /* React Flow controls — match the dashboard theme tokens so the +/- and
    fit-view buttons stay readable in both light and dark mode. */
 .react-flow__controls {
