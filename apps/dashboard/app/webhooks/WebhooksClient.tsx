@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { KNOWN_EVENT_TYPES, type KnownEventType } from "@/lib/webhooks";
+import { isDemoMode } from "@/lib/demo";
 
 interface WebhookRow {
   id: string;
@@ -43,6 +44,7 @@ function statusClass(status: number | null): string {
 }
 
 export function WebhooksClient() {
+  const demo = isDemoMode();
   const [rows, setRows] = useState<WebhookRow[] | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [created, setCreated] = useState<CreatedWebhook | null>(null);
@@ -106,13 +108,19 @@ export function WebhooksClient() {
         <div className="text-xs text-[var(--muted)]">
           {rows === null ? "Loading…" : `${rows.length} webhook${rows.length === 1 ? "" : "s"}`}
         </div>
-        <button
-          type="button"
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-        >
-          {showForm ? "Cancel" : "+ New webhook"}
-        </button>
+        {demo ? (
+          <span className="text-xs text-[var(--muted)]">
+            Read-only demo — managing webhooks disabled
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            {showForm ? "Cancel" : "+ New webhook"}
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -179,8 +187,15 @@ export function WebhooksClient() {
                     <button
                       type="button"
                       onClick={() => toggleActive(row)}
-                      title={row.isActive ? "Click to pause" : "Click to activate"}
-                      className={`flex items-center gap-2 text-xs ${
+                      disabled={demo}
+                      title={
+                        demo
+                          ? "Disabled in the read-only demo"
+                          : row.isActive
+                            ? "Click to pause"
+                            : "Click to activate"
+                      }
+                      className={`flex items-center gap-2 text-xs disabled:cursor-default ${
                         row.isActive
                           ? "text-emerald-700 dark:text-emerald-300"
                           : "text-[var(--muted)]"
@@ -208,8 +223,10 @@ export function WebhooksClient() {
                     <button
                       type="button"
                       onClick={() => remove(row)}
+                      disabled={demo}
                       aria-label="Delete webhook"
-                      className="rounded-md border border-[var(--border)] px-2 py-1 text-xs text-[var(--muted)] hover:bg-black/[.04] dark:hover:bg-white/[.04]"
+                      title={demo ? "Disabled in the read-only demo" : undefined}
+                      className="rounded-md border border-[var(--border)] px-2 py-1 text-xs text-[var(--muted)] hover:bg-black/[.04] disabled:opacity-40 disabled:hover:bg-transparent dark:hover:bg-white/[.04]"
                     >
                       ✕
                     </button>

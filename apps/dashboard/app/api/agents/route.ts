@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { isDemoMode, DEMO_MESSAGE } from "@/lib/demo";
 import { SimpleTrustProvider } from "@vanditk2/agentvault-trust";
 import { prisma } from "@/lib/db";
 import { signCredential } from "@/lib/credential";
@@ -47,6 +48,9 @@ interface CreateAgentBody {
 }
 
 export async function POST(req: NextRequest) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const body = (await req.json().catch(() => null)) as CreateAgentBody | null;
   if (!body) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { ResolveEscalationRequest } from "@vanditk2/agentvault-types";
+import { isDemoMode, DEMO_MESSAGE } from "@/lib/demo";
 
 const CHECKPOINT_URL =
   process.env.CHECKPOINT_INTERNAL_URL ?? "http://localhost:4000";
@@ -8,6 +9,9 @@ export async function POST(
   req: NextRequest,
   ctx: RouteContext<"/api/escalations/[id]/resolve">,
 ) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const { id } = await ctx.params;
   const body = (await req.json().catch(() => null)) as
     | Partial<ResolveEscalationRequest>

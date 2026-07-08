@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { POLICY_TEMPLATES, type PolicyTemplate } from "@/lib/policyTemplates";
 import { parseVendorInput } from "@/lib/vendors";
+import { isDemoMode } from "@/lib/demo";
 
 function defaultExpiresAtLocal(): string {
   const now = new Date();
@@ -70,6 +71,7 @@ export function AgentForm({
 }: AgentFormProps) {
   const router = useRouter();
   const isEdit = mode === "edit";
+  const demo = isDemoMode();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -441,16 +443,19 @@ export function AgentForm({
         </Link>
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || demo}
+          title={demo ? "Disabled in the read-only demo" : undefined}
           className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
         >
-          {submitting
-            ? isEdit
-              ? "Saving…"
-              : "Registering…"
-            : isEdit
-              ? "Save changes"
-              : "Register agent"}
+          {demo
+            ? "Read-only demo"
+            : submitting
+              ? isEdit
+                ? "Saving…"
+                : "Registering…"
+              : isEdit
+                ? "Save changes"
+                : "Register agent"}
         </button>
       </div>
     </form>

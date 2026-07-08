@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { parseVendorInput, serializeVendors, splitVendors } from "@/lib/vendors";
 import { parseVendorLimits, readVendorLimits } from "@/lib/vendorLimits";
 import { signCredential } from "@/lib/credential";
+import { isDemoMode, DEMO_MESSAGE } from "@/lib/demo";
 
 export async function GET(
   _req: NextRequest,
@@ -34,6 +35,9 @@ export async function PATCH(
   req: NextRequest,
   ctx: RouteContext<"/api/agents/[id]">,
 ) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const { id } = await ctx.params;
   const body = (await req.json().catch(() => null)) as PatchBody | null;
   if (!body) {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { EscalationDecision, EscalationRow } from "@vanditk2/agentvault-types";
+import { isDemoMode } from "@/lib/demo";
 
 function statusPill(status: EscalationRow["status"]): string {
   switch (status) {
@@ -33,7 +34,10 @@ function formatRelative(ms: number): string {
   return `${Math.round(ms / 3_600_000)}h ago`;
 }
 
+const DEMO_TITLE = "Disabled in the read-only demo";
+
 export function EscalationsList() {
+  const demo = isDemoMode();
   const [rows, setRows] = useState<EscalationRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());
@@ -189,17 +193,24 @@ export function EscalationsList() {
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2">
+                    {demo && (
+                      <span className="mr-1 text-[11px] text-[var(--muted)]">
+                        Read-only demo — resolving disabled
+                      </span>
+                    )}
                     <button
                       type="button"
-                      disabled={isResolving}
+                      disabled={isResolving || demo}
+                      title={demo ? DEMO_TITLE : undefined}
                       onClick={() => resolve(row.id, "blocked")}
-                      className="rounded-md border border-red-400 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+                      className="rounded-md border border-red-400 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
                     >
                       Block
                     </button>
                     <button
                       type="button"
-                      disabled={isResolving}
+                      disabled={isResolving || demo}
+                      title={demo ? DEMO_TITLE : undefined}
                       onClick={() => resolve(row.id, "approved")}
                       className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
                     >

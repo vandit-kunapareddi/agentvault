@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { isDemoMode } from "@/lib/demo";
 
 interface AgentActionsProps {
   agentId: string;
@@ -10,6 +11,7 @@ interface AgentActionsProps {
 }
 
 export function AgentActions({ agentId, expired }: AgentActionsProps) {
+  const demo = isDemoMode();
   const router = useRouter();
   const [expiring, setExpiring] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,14 @@ export function AgentActions({ agentId, expired }: AgentActionsProps) {
     } finally {
       setExpiring(false);
     }
+  }
+
+  if (demo) {
+    return (
+      <p className="text-xs text-[var(--muted)]">
+        Read-only demo — editing disabled
+      </p>
+    );
   }
 
   return (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import { isDemoMode } from "@/lib/demo";
 
 interface SummaryResponse {
   pendingEscalations: number;
@@ -23,6 +24,7 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 export function HeaderNav() {
+  const demo = isDemoMode();
   const pathname = usePathname() ?? "/";
   const [pendingEscalations, setPendingEscalations] = useState<number | null>(
     null,
@@ -74,16 +76,18 @@ export function HeaderNav() {
           </Link>
         );
       })}
-      <Link
-        href="/agents/new"
-        className={`whitespace-nowrap rounded-md px-3 py-1.5 transition ${
-          isActive(pathname, "/agents/new")
-            ? "bg-[var(--accent)] text-white opacity-100 ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--background)]"
-            : "bg-[var(--accent)] text-white hover:opacity-90"
-        }`}
-      >
-        Register Agent
-      </Link>
+      {!demo && (
+        <Link
+          href="/agents/new"
+          className={`whitespace-nowrap rounded-md px-3 py-1.5 transition ${
+            isActive(pathname, "/agents/new")
+              ? "bg-[var(--accent)] text-white opacity-100 ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--background)]"
+              : "bg-[var(--accent)] text-white hover:opacity-90"
+          }`}
+        >
+          Register Agent
+        </Link>
+      )}
       <ThemeToggle />
     </nav>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeaderNav } from "./HeaderNav";
+import { isDemoMode } from "@/lib/demo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,6 +48,13 @@ export default function RootLayout({
             <HeaderNav />
           </div>
         </header>
+        {isDemoMode() && (
+          <div className="border-b border-amber-400/40 bg-amber-400/10 px-4 py-2 text-center text-xs text-amber-700 sm:px-6 dark:text-amber-300">
+            <span className="font-medium">Read-only demo.</span> Anyone can
+            browse this public instance, but creating, editing, and approving
+            are disabled. Self-host AgentVault for full control.
+          </div>
+        )}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
           {children}
         </main>

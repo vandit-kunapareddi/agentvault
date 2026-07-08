@@ -1,11 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { sanitizeWebhook, validateWebhookInput } from "@/lib/webhooks";
+import { isDemoMode, DEMO_MESSAGE } from "@/lib/demo";
 
 export async function PATCH(
   req: NextRequest,
   ctx: RouteContext<"/api/webhooks/[id]">,
 ) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const { id } = await ctx.params;
   const body = await req.json().catch(() => null);
   const validated = validateWebhookInput(body, { requireUrl: false });
@@ -41,6 +45,9 @@ export async function DELETE(
   _req: NextRequest,
   ctx: RouteContext<"/api/webhooks/[id]">,
 ) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const { id } = await ctx.params;
   try {
     await prisma.webhook.delete({ where: { id } });

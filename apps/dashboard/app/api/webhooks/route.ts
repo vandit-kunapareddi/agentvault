@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/db";
 import { sanitizeWebhook, validateWebhookInput } from "@/lib/webhooks";
+import { isDemoMode, DEMO_MESSAGE } from "@/lib/demo";
 
 export async function GET() {
   const rows = await prisma.webhook.findMany({
@@ -11,6 +12,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (isDemoMode()) {
+    return NextResponse.json({ error: DEMO_MESSAGE }, { status: 403 });
+  }
   const body = await req.json().catch(() => null);
   const validated = validateWebhookInput(body, { requireUrl: true });
   if (!validated.ok) {
