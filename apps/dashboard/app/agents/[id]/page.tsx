@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { splitVendors } from "@/lib/vendors";
+import { maskEmail } from "@/lib/mask";
 import { readVendorLimits } from "@/lib/vendorLimits";
 import { CredentialField } from "./CredentialField";
 import { AgentActions } from "./AgentActions";
@@ -83,7 +84,7 @@ export default async function AgentDetailPage({
       </div>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Card label="Authorized by" value={agent.authorizedBy} />
+        <Card label="Authorized by" value={maskEmail(agent.authorizedBy)} />
         <Card label="Trust" value={`${agent.trustTier} · ${Math.round(agent.trustScore)}`} />
         <Card label="Wallet address" value={agent.walletAddress} mono />
         <Card label="Expires" value={formatDate(agent.expiresAt)} />

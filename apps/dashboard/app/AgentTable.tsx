@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trustTierBadge } from "@/lib/status";
+import { maskEmail } from "@/lib/mask";
 import {
   healthDot,
   healthLabel,
@@ -168,7 +169,7 @@ export function AgentTable() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-[var(--muted)]">
-                  {agent.authorizedBy}
+                  {maskEmail(agent.authorizedBy)}
                 </td>
                 <td className="px-4 py-3">{formatCurrency(agent.dailyCap)}</td>
                 <td className="px-4 py-3">{formatCurrency(agent.perTxLimit)}</td>
